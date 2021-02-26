@@ -1,5 +1,7 @@
+import 'package:expiry_reminder/pages/SignUp/verifyPhonePage.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
 import 'package:expiry_reminder/utils/constants.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -357,17 +359,30 @@ class _SignUpPageState extends State<SignUpPage> {
                                             fontSize: 18.0),
                                       ),
                                       onPressed: () async {
-                                        if (_formKey.currentState
-                                            .saveAndValidate()) {
-                                          String userId =
-                                              await UserAuthService.signUpEmail(
-                                                  userNameController.text,
-                                                  emailController.text,
-                                                  passwordController.text,
-                                                  phoneNumberController.text);
-                                        } else {
-                                          print('Error');
-                                        }
+                                        // if (_formKey.currentState
+                                        //     .saveAndValidate()) {
+                                        //   String userId =
+                                        //       await UserAuthService.signUpEmail(
+                                        //           userNameController.text,
+                                        //           emailController.text,
+                                        //           passwordController.text,
+                                        //           phoneNumberController.text);
+                                        //   Navigator.push(
+                                        //     context,
+                                        //     MaterialPageRoute(
+                                        //         builder: (context) =>
+                                        //             VerifyPhone(
+                                        //                 userId: userId)),
+                                        //   );
+                                        // } else {
+                                        //   print('Error');
+                                        // }
+                                        Navigator.push(
+                                            context,
+                                            CupertinoPageRoute(
+                                                builder: (context) =>
+                                                    VerifyPhone(
+                                                        userId: '12345')));
                                       })),
                             ],
                           ),

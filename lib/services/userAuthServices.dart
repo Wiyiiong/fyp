@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expiry_reminder/utils/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class UserAuthService {
   static Future<Map<int, String>> signInEmail(
@@ -34,10 +36,10 @@ class UserAuthService {
       'phoneNumber': phone,
       'preferredAlertTime': defaultAlertTime,
       'createdDatetime': DateTime.now().millisecondsSinceEpoch,
-      'facebookToken': null,
-      'twitterToken': null,
-      'gmailToken': null,
-      'modifyDatetime': null,
+      'facebookToken': "",
+      'twitterToken': "",
+      'gmailToken': "",
+      'modifyDatetime': DateTime.now().millisecondsSinceEpoch,
       'isDeleted': false,
       'isEmailVerify': false,
       'isPhoneVerify': false,
@@ -52,5 +54,44 @@ class UserAuthService {
   static User getCurrentUser() {
     User user = auth.currentUser;
     return user;
+  }
+
+  static Future<String> signInGoogle() async {
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    final UserCredential authResult =
+        await auth.signInWithCredential(credential);
+    final User user = authResult.user;
+
+    if (user != null) {
+      var userDoc = await userRef.doc(user.uid).get();
+      if (!userDoc.exists) {
+        await userRef.doc(user.uid).set({
+          'name': user.displayName,
+          'email': user.email,
+          'phoneNumber': user.phoneNumber,
+          'preferredAlertTime': defaultAlertTime,
+          'createdDatetime': DateTime.now().millisecondsSinceEpoch,
+          'facebookToken': "",
+          'twitterToken': "",
+          'gmailToken': "",
+          'modifyDatetime': DateTime.now().millisecondsSinceEpoch,
+          'isDeleted': false,
+          'isEmailVerify': true,
+          'isPhoneVerify': false,
+        });
+      }
+
+      return user.uid;
+    }
+
+    return null;
   }
 }

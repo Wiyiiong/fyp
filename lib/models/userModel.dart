@@ -43,8 +43,10 @@ class User {
       isPhoneVerify: doc['isPhoneVerify'],
       isDeleted: doc['isDeleted'],
       preferredAlertTime: doc['preferredAlertTime'],
-      createdDateTime: doc['createdDatetime'].toDate(),
-      modifiedDateTime: doc['modifyDatetime'].toDate(),
+      createdDateTime:
+          DateTime.fromMillisecondsSinceEpoch(doc['createdDatetime']),
+      modifiedDateTime:
+          DateTime.fromMillisecondsSinceEpoch(doc['modifyDatetime']),
     );
   }
 }

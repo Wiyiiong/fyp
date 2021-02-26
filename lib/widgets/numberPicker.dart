@@ -53,7 +53,8 @@ class _NumberPickerState extends State<NumberPicker> {
     _step = widget.step;
     _labelText = widget.labelText;
     _isResetButton = widget.isResetButton;
-    textController = TextEditingController(text: widget.minValue.toString());
+    textController =
+        TextEditingController(text: widget.initialValue.toString());
   }
 
   @override
@@ -134,8 +135,9 @@ class _NumberPickerState extends State<NumberPicker> {
                             color: Theme.of(context).primaryColor,
                             onPressed: () {
                               setState(() {
-                                _initialValue = widget.initialValue;
-                                textController.text = _initialValue.toString();
+                                _initialValue = widget.minValue;
+                                textController.text =
+                                    widget.minValue.toString();
                                 _isNumberValid = true;
                               });
                             },
@@ -147,11 +149,9 @@ class _NumberPickerState extends State<NumberPicker> {
 
   bool isAbleToAction(Action action) {
     if (action == Action.Add) {
-      print(_initialValue + _step <= _maxValue);
       return _initialValue + _step <= _maxValue;
     }
     if (action == Action.Minus) {
-      print(_initialValue - _step >= _minValue);
       return _initialValue - _step >= _minValue;
     }
     return false;

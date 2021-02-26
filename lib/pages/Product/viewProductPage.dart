@@ -1,12 +1,15 @@
 import 'package:expiry_reminder/models/alertModel.dart';
 import 'package:expiry_reminder/models/personalProductModel.dart';
+import 'package:expiry_reminder/models/shoppingListModel.dart';
 import 'package:expiry_reminder/services/productServices.dart';
+import 'package:expiry_reminder/services/shoppingListService.dart';
+import 'package:expiry_reminder/utils/ThemeData.dart';
 import 'package:expiry_reminder/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 
-import 'addProductPage.dart';
+import 'productActionPage.dart';
 
 class ViewProductPage extends StatefulWidget {
   final String currentUserId;
@@ -219,7 +222,7 @@ class _ViewProductPageState extends State<ViewProductPage>
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Product Information',
-                    labelStyle: Theme.of(context).primaryTextTheme.bodyText1,
+                    labelStyle: Theme.of(context).primaryTextTheme.headline6,
                     contentPadding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
                   ),
                   child: Column(children: [
@@ -321,7 +324,7 @@ class _ViewProductPageState extends State<ViewProductPage>
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Stock Number',
-                    labelStyle: Theme.of(context).primaryTextTheme.bodyText1,
+                    labelStyle: Theme.of(context).primaryTextTheme.headline6,
                     contentPadding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
                   ),
                   child: Column(children: [
@@ -361,7 +364,7 @@ class _ViewProductPageState extends State<ViewProductPage>
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Reminder & Alert',
-                    labelStyle: Theme.of(context).primaryTextTheme.bodyText1,
+                    labelStyle: Theme.of(context).primaryTextTheme.headline6,
                     contentPadding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
                   ),
                   child: Column(children: [
@@ -377,6 +380,142 @@ class _ViewProductPageState extends State<ViewProductPage>
                       padding: EdgeInsets.symmetric(vertical: 10.0),
                     ),
                   ])),
+
+              /// Padding
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.0),
+              ),
+
+              Divider(
+                height: 1,
+              ),
+              FlatButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Delete Product'),
+                            content: RichText(
+                                text: TextSpan(
+                                    text: 'Are you sure you want to delete ',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        color: Theme.of(context)
+                                            .primaryTextTheme
+                                            .bodyText2
+                                            .color,
+                                        height: 1.2),
+                                    children: <TextSpan>[
+                                  TextSpan(
+                                      text: '${_product.productName} ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  TextSpan(
+                                    text: '?',
+                                  )
+                                ])),
+                            actions: [
+                              FlatButton(
+                                child: Text('CANCEL',
+                                    style: TextStyle(
+                                        color:
+                                            Theme.of(context).disabledColor)),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              FlatButton(
+                                child: Text('DELETE'),
+                                onPressed: () async {
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      barrierColor:
+                                          Theme.of(context).splashColor,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          backgroundColor: Colors.transparent,
+                                          elevation: 0.0,
+                                          child: Expanded(
+                                            child: SizedBox.expand(
+                                              child: Center(
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    CircularProgressIndicator(
+                                                        valueColor:
+                                                            new AlwaysStoppedAnimation<
+                                                                Color>(Theme.of(
+                                                                    context)
+                                                                .primaryColor)),
+                                                    Text('Loading...',
+                                                        style: Theme.of(context)
+                                                            .primaryTextTheme
+                                                            .bodyText1)
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                  await ProductService.permanentDeleteProduct(
+                                      widget.currentUserId,
+                                      widget.currentProductId);
+                                  Navigator.of(context).pop();
+
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      barrierColor:
+                                          Theme.of(context).splashColor,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                            child: Container(
+                                          padding: EdgeInsets.all(20.0),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Center(
+                                                  child: Icon(
+                                                      Icons.done_all_outlined,
+                                                      size: 28.0,
+                                                      color: Theme.of(context)
+                                                          .primaryIconTheme
+                                                          .color)),
+                                              Text('Deleted Successfully!',
+                                                  style: Theme.of(context)
+                                                      .primaryTextTheme
+                                                      .headline5),
+                                              Text('Redirect back to Home Page',
+                                                  style: Theme.of(context)
+                                                      .primaryTextTheme
+                                                      .bodyText2),
+                                              Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 20.0))
+                                            ],
+                                          ),
+                                        ));
+                                      });
+                                  new Future.delayed(new Duration(seconds: 3),
+                                      () {
+                                    Navigator.pop(context); //pop dialog
+                                    Navigator.pop(
+                                        context); // pop success dialog
+                                    Navigator.pop(context); // pop page
+                                  });
+                                },
+                              )
+                            ],
+                          );
+                        });
+                  },
+                  child:
+                      Text('Delete Product', style: TextStyle(color: danger))),
+              Divider(height: 1),
             ],
           )),
     );
@@ -401,11 +540,11 @@ class _ViewProductPageState extends State<ViewProductPage>
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductActionPage(
-                                  currentUserId: 'IlrOYURIQw1IU17AJTFX',
+                                  currentUserId: widget.currentUserId,
                                   isEdit: true,
                                   productId: widget.currentProductId,
                                 ),
-                              ));
+                              )).then((value) => _setupViewProductPage());
                         })))
           ],
           centerTitle: true,

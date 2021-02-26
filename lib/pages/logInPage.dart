@@ -270,7 +270,23 @@ class _LogInPageState extends State<LogInPage> {
                               ),
                               SignInButtonBuilder(
                                   backgroundColor: Colors.white,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    UserAuthService.signInGoogle()
+                                        .then((result) => {
+                                              if (result != null)
+                                                {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          HomePage(
+                                                        currentUserId: result,
+                                                      ),
+                                                    ),
+                                                  )
+                                                }
+                                            });
+                                  },
                                   text: 'Sign in with Google',
                                   mini: true,
                                   image: Image.asset(

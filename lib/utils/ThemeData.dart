@@ -22,7 +22,7 @@ Color pPurple = Colors.purple[800];
 Color aLightGrey = Colors.grey[500];
 Color aDarkGrey = Colors.grey[800];
 
-/// colors to indicates the danger, safe and medium
+/// colors to indicates the danger, close to danger, safe and medium
 Color danger = Colors.red;
 Color safe = Colors.green[800];
 Color medium = Colors.yellow[800];
@@ -64,7 +64,7 @@ ThemeData buildLightTheme() {
       headline4: TextStyle(color: ttGrey, fontSize: 30.0),
       headline5: TextStyle(color: ttGrey, fontSize: 28.0),
       headline6: TextStyle(color: ttGrey, fontSize: 20.0),
-      bodyText1: TextStyle(color: ttGrey, fontSize: 18.0),
+      bodyText1: TextStyle(color: ttGrey, fontSize: 14.0),
       bodyText2: TextStyle(color: ttGrey),
       subtitle1: TextStyle(
           color: aDarkGrey, fontSize: 16.0, fontWeight: FontWeight.w500),

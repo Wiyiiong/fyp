@@ -11,8 +11,22 @@ import 'package:firebase_core/firebase_core.dart';
 import 'dart:io';
 
 class ProductService {
-  /// Get all personal product of the user
+  /// Get all non deleted personal product of the user
   static Future<List<PersonalProduct>> getProducts(String userId) async {
+    QuerySnapshot productSnapshot = await userRef
+        .doc(userId)
+        .collection('personalProducts')
+        .where('isDeleted', isEqualTo: false)
+        .get();
+    List<PersonalProduct> products = productSnapshot.docs
+        .map((doc) => PersonalProduct.fromDoc(doc))
+        .toList();
+    products.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+    return products;
+  }
+
+  /// Get all personal product of the user
+  static Future<List<PersonalProduct>> getAllProducts(String userId) async {
     QuerySnapshot productSnapshot =
         await userRef.doc(userId).collection('personalProducts').get();
     List<PersonalProduct> products = productSnapshot.docs
@@ -20,6 +34,25 @@ class ProductService {
         .toList();
     products.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
     return products;
+  }
+
+  /// Get a single product based on the id
+  static Future<List<PersonalProduct>> getProductsByCategory(
+      String userId, String category) async {
+    QuerySnapshot productSnapshot = await userRef
+        .doc(userId)
+        .collection('personalProducts')
+        .where('category', isEqualTo: category)
+        .where('isDeleted', isEqualTo: false)
+        .get();
+    if (productSnapshot.docs.length > 0) {
+      List<PersonalProduct> products = productSnapshot.docs
+          .map((doc) => PersonalProduct.fromDoc(doc))
+          .toList();
+      products.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+      return products;
+    }
+    return new List<PersonalProduct>();
   }
 
   /// Get a single product based on the id
@@ -32,7 +65,26 @@ class ProductService {
         .get();
     PersonalProduct product = PersonalProduct.fromDoc(productSnapshot);
     product.alerts = await getAlerts(userId, productId);
-    return product;
+    return product.isDeleted ? null : product;
+  }
+
+  /// Get a single product based on the id
+  static Future<PersonalProduct> getProductByBarcode(
+      String userId, String barcode) async {
+    QuerySnapshot productSnapshot = await userRef
+        .doc(userId)
+        .collection('personalProducts')
+        .where('barcode', isEqualTo: barcode)
+        .where('isDeleted', isEqualTo: false)
+        .get();
+    if (productSnapshot.docs.length > 0) {
+      List<PersonalProduct> products = productSnapshot.docs
+          .map((doc) => PersonalProduct.fromDoc(doc))
+          .toList();
+      var product = products.first;
+      return product;
+    }
+    return null;
   }
 
   /// Get all alert of the product
@@ -54,8 +106,11 @@ class ProductService {
 
   /// Get all category added by the user
   static Future<List<String>> getCategory(String userId) async {
-    QuerySnapshot productSnapshot =
-        await userRef.doc(userId).collection('personalProducts').get();
+    QuerySnapshot productSnapshot = await userRef
+        .doc(userId)
+        .collection('personalProducts')
+        .where('isDeleted', isEqualTo: false)
+        .get();
 
     List<dynamic> categories = productSnapshot.docs
         .map((doc) => PersonalProduct.fromDoc(doc))
@@ -161,6 +216,7 @@ class ProductService {
         'image': product.image,
         'numStocks': product.numStocks,
         'productName': product.productName,
+        'isDeleted': false,
       });
 
       if (docRef != null) {
@@ -230,7 +286,55 @@ class ProductService {
       print(e);
       return false;
     }
-    return false;
+  }
+
+  static Future deletePersonalProduct(String userId, String productId) async {
+    try {
+      DocumentSnapshot productSnapshot = await userRef
+          .doc(userId)
+          .collection('personalProducts')
+          .doc(productId)
+          .get();
+
+      if (productSnapshot.exists) {
+        productSnapshot.reference
+            .collection('alert')
+            .get()
+            .then((alertSnapshot) async {
+          for (DocumentSnapshot alertds in alertSnapshot.docs) {
+            await alertds.reference.delete().catchError((e) => print(e));
+          }
+        });
+        await productSnapshot.reference
+            .update({'isDeleted': true}).catchError((e) => print(e));
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  static Future permanentDeleteProduct(String userId, String productId) async {
+    try {
+      DocumentSnapshot productSnapshot = await userRef
+          .doc(userId)
+          .collection('personalProducts')
+          .doc(productId)
+          .get();
+
+      if (productSnapshot.exists) {
+        productSnapshot.reference
+            .collection('alert')
+            .get()
+            .then((alertSnapshot) async {
+          for (DocumentSnapshot alertds in alertSnapshot.docs) {
+            await alertds.reference.delete().catchError((e) => print(e));
+          }
+        });
+        await productSnapshot.reference.delete().catchError((e) => print(e));
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   /// Add new personal category
@@ -265,6 +369,100 @@ class ProductService {
     }
   }
 
+  /// Edit Existing Category
+  static Future editCategory(
+      String category, String newCategory, String userId) async {
+    try {
+      // search in unused category
+      QuerySnapshot unusedCategorySnapshot = await userRef
+          .doc(userId)
+          .collection('unuseCategory')
+          .where('categoryName', isEqualTo: category)
+          .get();
+      if (unusedCategorySnapshot.docs.length > 0) {
+        await userRef
+            .doc(userId)
+            .collection('unuseCategory')
+            .doc(unusedCategorySnapshot.docs.first.id)
+            .update({'categoryName': newCategory}).catchError((e) => print(e));
+      }
+      // search in all products
+      QuerySnapshot usedCategorySnapshot = await userRef
+          .doc(userId)
+          .collection('personalProducts')
+          .where('category', isEqualTo: category)
+          .get();
+      if (usedCategorySnapshot.docs.length > 0) {
+        for (DocumentSnapshot ds in usedCategorySnapshot.docs) {
+          DocumentSnapshot product = await userRef
+              .doc(userId)
+              .collection('personalProducts')
+              .doc(ds.id)
+              .get();
+          await product.reference
+              .update({'category': newCategory}).catchError((e) => print(e));
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// Delete Category and its product
+  static Future deleteCategory(String category, String userId) async {
+    try {
+      // search in unused category
+      QuerySnapshot unusedCategorySnapshot = await userRef
+          .doc(userId)
+          .collection('unuseCategory')
+          .where('categoryName', isEqualTo: category)
+          .get();
+      if (unusedCategorySnapshot.docs.length > 0) {
+        await userRef
+            .doc(userId)
+            .collection('unuseCategory')
+            .doc(unusedCategorySnapshot.docs.first.id)
+            .delete()
+            .catchError((e) => print(e));
+      }
+      // search in personal product
+      QuerySnapshot productSnapshot = await userRef
+          .doc(userId)
+          .collection('personalProducts')
+          .where('category', isEqualTo: category)
+          .get();
+      if (productSnapshot.docs.length > 0) {
+        for (DocumentSnapshot productds in productSnapshot.docs) {
+          QuerySnapshot alertSnapshot = await userRef
+              .doc(userId)
+              .collection('personalProducts')
+              .doc(productds.id)
+              .collection('alert')
+              .get();
+          if (alertSnapshot.docs.length > 0) {
+            for (DocumentSnapshot alertds in alertSnapshot.docs) {
+              await userRef
+                  .doc(userId)
+                  .collection('personalProducts')
+                  .doc(productds.id)
+                  .collection('alert')
+                  .doc(alertds.id)
+                  .delete()
+                  .catchError((e) => print(e));
+            }
+          }
+          await userRef
+              .doc(userId)
+              .collection('personalProducts')
+              .doc(productds.id)
+              .update({'isDeleted': true}).catchError((e) => print(e));
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   /// Upload product image into cloud storage
   static Future<String> uploadProductImage(File image) async {
     String downloadUrl;
@@ -278,5 +476,15 @@ class ProductService {
       print(e);
     }
     return downloadUrl;
+  }
+
+  static Future prepareProductList(String userId) async {
+    List<PersonalProduct> productList = await getProducts(userId);
+
+    productList.forEach((e) async {
+      if (e.numStocks == 0) {
+        await deletePersonalProduct(userId, e.id);
+      }
+    });
   }
 }

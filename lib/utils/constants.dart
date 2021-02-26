@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 final _firestore = FirebaseFirestore.instance;
 final storageRef = FirebaseStorage.instance.ref();
 final userRef = _firestore.collection('users');
 final auth = FirebaseAuth.instance;
+final GoogleSignIn googleSignIn = GoogleSignIn();
 
 // Enum Constants
 /// Alert Type

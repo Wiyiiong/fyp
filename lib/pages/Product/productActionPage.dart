@@ -55,6 +55,7 @@ class _ProductActionPageState extends State<ProductActionPage>
   // Selected items from picker and Drop down
   /// Image file for product added
   File _image;
+  String _imageUrl;
 
   /// Image file for date
   File _dateImage;
@@ -70,6 +71,7 @@ class _ProductActionPageState extends State<ProductActionPage>
 
   /// Selected number of stocks
   int _numStocks;
+  int _minValue;
 
   /// today's date
   DateTime today;
@@ -114,10 +116,9 @@ class _ProductActionPageState extends State<ProductActionPage>
 
   @override
   void dispose() {
+    super.dispose();
     _animationController.dispose();
     _focusNode.dispose();
-
-    super.dispose();
   }
 
   _setupAddProductPage() async {
@@ -133,6 +134,8 @@ class _ProductActionPageState extends State<ProductActionPage>
         _selectedDate = new DateTime.now();
         _barcode = "";
         _numStocks = 1;
+        _minValue = 1;
+        _imageUrl = null;
         today = new DateTime(
             DateTime.now().year, DateTime.now().month, DateTime.now().day);
         _alertList = [];
@@ -161,6 +164,8 @@ class _ProductActionPageState extends State<ProductActionPage>
         _selectedDate = product.expiryDate;
         _barcode = '${product.barcode ?? "-"}';
         _numStocks = product.numStocks;
+        _minValue = 0;
+        _imageUrl = product.image;
         today = new DateTime(
             DateTime.now().year, DateTime.now().month, DateTime.now().day);
         _alertList = product.alerts ?? [];
@@ -335,7 +340,7 @@ class _ProductActionPageState extends State<ProductActionPage>
                       child: Icon(Icons.done_all_outlined,
                           size: 28.0,
                           color: Theme.of(context).primaryIconTheme.color)),
-                  Text('Added Successfully!',
+                  Text('Edited Successfully!',
                       style: Theme.of(context).primaryTextTheme.headline5),
                   Text('Redirect back to Home Page',
                       style: Theme.of(context).primaryTextTheme.bodyText2),
@@ -644,58 +649,64 @@ class _ProductActionPageState extends State<ProductActionPage>
   // #region [ "Alert Dialog - Upload Photo Alert Dialog" ]
 
   Widget _buildUploadImageDialog(BuildContext context) {
-    return new AlertDialog(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10.0))),
-      title: Text('Edit Product Photo'),
-      actions: <Widget>[
-        FlatButton(
-          child: Text('CHANGE PHOTO'),
-          onPressed: () {
-            getProductImage();
-            Navigator.of(context).pop();
-            FocusScope.of(context).unfocus();
-          },
-          padding: EdgeInsets.only(right: 20.0),
-          visualDensity: VisualDensity.compact,
-        ),
-        FlatButton(
-          child: Text('CROP PHOTO'),
-          onPressed: () {
-            cropProductImage();
-            Navigator.of(context).pop();
-            FocusScope.of(context).unfocus();
-          },
-          padding: EdgeInsets.only(right: 20.0),
-          visualDensity: VisualDensity.compact,
-        ),
-        FlatButton(
-            child: Text(
-              'REMOVE PHOTO',
+    return Container(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(padding: EdgeInsets.symmetric(vertical: 3)),
+            // Text(
+            //   'Edit Product Photo',
+            //   style: Theme.of(context).primaryTextTheme.bodyText1,
+            // ),
+            // Padding(padding: EdgeInsets.symmetric(vertical: 3)),
+            // Divider(),
+            ListTile(
+              title: Center(
+                  child: Text('CHANGE PHOTO',
+                      style: TextStyle(color: Theme.of(context).primaryColor))),
+              onTap: () {
+                getProductImage();
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
             ),
-            onPressed: () {
-              setState(() {
-                _image = null;
-              });
-              Navigator.of(context).pop();
-              FocusScope.of(context).unfocus();
-            },
-            padding: EdgeInsets.only(right: 20.0),
-            visualDensity: VisualDensity.compact,
-            textColor: danger),
-        FlatButton(
-            child: Text(
-              'CANCEL',
+            ListTile(
+              title: Center(
+                  child: Text('CROP PHOTO',
+                      style: TextStyle(color: Theme.of(context).primaryColor))),
+              onTap: () {
+                cropProductImage();
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
             ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              FocusScope.of(context).unfocus();
-            },
-            padding: EdgeInsets.only(right: 20.0),
-            visualDensity: VisualDensity.compact,
-            textColor: Theme.of(context).hintColor),
-      ],
-    );
+            ListTile(
+              title: Center(
+                  child: Text('REMOVE PHOTO', style: TextStyle(color: danger))),
+              onTap: () {
+                setState(() {
+                  _image = null;
+                });
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
+            ),
+            Divider(
+              height: 0.5,
+            ),
+            ListTile(
+              title: Center(
+                  child: Text('CANCEL',
+                      style:
+                          TextStyle(color: Theme.of(context).disabledColor))),
+              onTap: () {
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
+            ),
+          ],
+        ));
   }
   // #endregion
 
@@ -733,20 +744,49 @@ class _ProductActionPageState extends State<ProductActionPage>
                           width: MediaQuery.of(context).size.width - 40,
                           height: MediaQuery.of(context).size.height * 0.3 - 20,
                           child: InkWell(
-                            child: _image == null
-                                ? Image.asset(
-                                    'assets/image/image_placeholder.png',
-                                  )
-                                : Image.file(_image),
+                            child: widget.isEdit
+                                ? _image == null && _imageUrl == null
+                                    ? Image.asset(
+                                        'assets/image/image_placeholder.png',
+                                      )
+                                    : _image == null
+                                        ? Image.network(
+                                            _product.image,
+                                            loadingBuilder:
+                                                (BuildContext context,
+                                                    Widget child,
+                                                    ImageChunkEvent
+                                                        loadingProgress) {
+                                              if (loadingProgress == null)
+                                                return child;
+                                              return Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              );
+                                            },
+                                          )
+                                        : Image.file(_image)
+                                : _image == null
+                                    ? Image.asset(
+                                        'assets/image/image_placeholder.png',
+                                      )
+                                    : Image.file(_image),
                             splashColor: Colors.transparent,
                             onTap: () {
-                              if (_image == null) {
-                                getProductImage();
-                              } else {
-                                showDialog(
+                              if ((widget.isEdit && _imageUrl != null) ||
+                                  _image != null) {
+                                showModalBottomSheet(
                                     context: context,
                                     builder: (BuildContext context) =>
-                                        _buildUploadImageDialog(context));
+                                        _buildUploadImageDialog(context),
+                                    backgroundColor:
+                                        Theme.of(context).backgroundColor,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(20),
+                                            topRight: Radius.circular(20))));
+                              } else if (_image == null) {
+                                getProductImage();
                               }
                             },
                           ),
@@ -950,8 +990,8 @@ class _ProductActionPageState extends State<ProductActionPage>
                         });
                       },
                       maxValue: 9999,
-                      minValue: 1,
-                      initialValue: 1,
+                      minValue: _minValue,
+                      initialValue: _numStocks,
                       step: 1,
                       isResetButton: true,
                       labelText: 'Stock Number',

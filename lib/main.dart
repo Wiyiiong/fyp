@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 // import pages
 import './pages/homePage.dart';
-import 'pages/Product/addProductPage.dart';
+import 'pages/Product/productActionPage.dart';
 import 'pages/Product/viewProductPage.dart';
 
 void main() async {
