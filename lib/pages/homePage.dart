@@ -2,17 +2,22 @@ import 'package:expiry_reminder/models/userModel.dart';
 import 'package:expiry_reminder/pages/Product/productActionPage.dart';
 import 'package:expiry_reminder/pages/firstTimeIntroPage.dart';
 import 'package:expiry_reminder/pages/introScreen.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
+import 'package:expiry_reminder/services/notificationServices.dart';
 import 'package:expiry_reminder/services/userServices.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
+import 'package:expiry_reminder/utils/constants.dart';
 import 'package:expiry_reminder/widgets/productList.dart';
 import 'package:expiry_reminder/widgets/MyDrawer.dart';
 import 'package:expiry_reminder/widgets/dashboard.dart';
 import 'package:expiry_reminder/widgets/searchPage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/personalProductModel.dart';
 import '../services/productServices.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class HomePage extends StatefulWidget {
   final String currentUserId;
@@ -47,6 +52,13 @@ class _HomePageState extends State<HomePage> {
         await ProductService.getProducts(userDetails.id);
 
     await checkFirstSeen();
+
+    await CloudMessagingService.requestPermissions();
+    await CloudMessagingService.saveTokenToDB();
+    FirebaseMessaging.instance.onTokenRefresh
+        .listen(await CloudMessagingService.saveTokenToDB());
+    displayNotification();
+
     if (mounted) {
       setState(() {
         _products = products;
@@ -64,6 +76,33 @@ class _HomePageState extends State<HomePage> {
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => FirstTimeIntro()));
     }
+  }
+
+  void displayNotification() async {
+    NotificationService.initNotification(context);
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification notification = message.notification;
+      AndroidNotification android = message.notification?.android;
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channel.description,
+                icon: android?.smallIcon,
+                // other properties...
+              ),
+            ));
+      }
+    });
   }
 
   // #region [ "Widget - Search Bar" ]

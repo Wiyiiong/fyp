@@ -1,13 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 final _firestore = FirebaseFirestore.instance;
 final storageRef = FirebaseStorage.instance.ref();
 final userRef = _firestore.collection('users');
 final auth = FirebaseAuth.instance;
 final GoogleSignIn googleSignIn = GoogleSignIn();
+final cloudMesaging = FirebaseMessaging.instance;
+final flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
 
 // Enum Constants
 /// Alert Type
@@ -60,3 +64,12 @@ final monthConst = {
   'Nov': 11,
   'Dec': 12
 };
+
+// Notifications
+/// Android channel
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  'high_importance_channel', // id
+  'High Importance Notifications', // title
+  'This channel is used for important notifications.', // description
+  importance: Importance.max,
+);
