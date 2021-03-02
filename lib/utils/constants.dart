@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 final _firestore = FirebaseFirestore.instance;
 final storageRef = FirebaseStorage.instance.ref();
 final userRef = _firestore.collection('users');
 final auth = FirebaseAuth.instance;
+final GoogleSignIn googleSignIn = GoogleSignIn();
 
 // Enum Constants
 /// Alert Type
@@ -34,6 +36,27 @@ final confirmPasswordErrorMsg =
 
 final phoneErrorMsg = 'Phone number is not valid. Example: 60123456789';
 
+/// Verify Phone
+final invalidPhoneErrorMsg = 'The phone number {phoneNumber} is not valid';
+
 // Settings
 /// Default alert time
 final defaultAlertTime = "12:00";
+
+// Month constants
+/// Month constants [key='MMM', value=MMM]
+/// Example: monthConst['Jan'] = 1
+final monthConst = {
+  'Jan': 1,
+  'Feb': 2,
+  'Mar': 3,
+  'Apr': 4,
+  'May': 5,
+  'Jun': 6,
+  'Jul': 7,
+  'Aug': 8,
+  'Sep': 9,
+  'Oct': 10,
+  'Nov': 11,
+  'Dec': 12
+};

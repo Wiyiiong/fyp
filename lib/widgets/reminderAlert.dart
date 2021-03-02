@@ -52,11 +52,6 @@ class _ReminderAlertState extends State<ReminderAlert> {
     _alertList = [];
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   void setUpReminderDetails() async {
     List<Alert> alertList =
         await ProductService.getAlerts(widget.userDetails.id, widget.productId);
@@ -76,13 +71,14 @@ class _ReminderAlertState extends State<ReminderAlert> {
         selectedType.add(2);
       }
     }
-
-    setState(() {
-      _isSwitchOn = _isDoneSelected = true;
-      _alertList = alertList;
-      _selectedType = selectedType;
-      _selectedValue = selectedValue;
-    });
+    if (mounted) {
+      setState(() {
+        _isSwitchOn = _isDoneSelected = true;
+        _alertList = alertList;
+        _selectedType = selectedType;
+        _selectedValue = selectedValue;
+      });
+    }
   }
 
   // #region [ "Add Alert Funtions" ]
@@ -328,7 +324,7 @@ class _ReminderAlertState extends State<ReminderAlert> {
       }
       return alertCardList;
     }
-    return [Container()];
+    return [SizedBox.shrink()];
   }
   // #endregion
 
@@ -522,51 +518,53 @@ class _ReminderAlertState extends State<ReminderAlert> {
         if (_alertList[i]
             .alertDatetime
             .isAfter(widget.expiryDate.add(Duration(days: 1)))) {
-          setState(() {
-            _alertList.clear();
-            _selectedType.clear();
-            _selectedValue.clear();
-            _isDoneSelected = false;
-          });
+          if (mounted) {
+            setState(() {
+              _alertList.clear();
+              _selectedType.clear();
+              _selectedValue.clear();
+              _isDoneSelected = false;
+            });
+          }
           break;
         }
       }
-
-      return Container(
-          child: Padding(
-        padding: EdgeInsets.all(4.0),
-        child: InputDecorator(
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-            labelStyle: Theme.of(context).primaryTextTheme.bodyText1,
-            labelText: 'Reminder & Alert',
-            contentPadding: EdgeInsets.all(20.0),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              SwitchListTile.adaptive(
-                  dense: true,
-                  title: Text('Reminder'),
-                  activeColor: Theme.of(context).primaryColor,
-                  value: _isSwitchOn,
-                  onChanged: (value) {
-                    setState(() {
-                      _isSwitchOn = value;
-                      if (!_isSwitchOn) {
-                        _alertList.clear();
-                        _selectedType.clear();
-                        _selectedValue.clear();
-                        _isDoneSelected = false;
-                      }
-                    });
-                  }),
-              ..._displayAlert(),
-              _buildAddReminderTile(),
-            ],
-          ),
-        ),
-      ));
     }
+
+    return Container(
+        child: Padding(
+      padding: EdgeInsets.all(4.0),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
+          labelStyle: Theme.of(context).primaryTextTheme.bodyText1,
+          labelText: 'Reminder & Alert',
+          contentPadding: EdgeInsets.all(20.0),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SwitchListTile.adaptive(
+                dense: true,
+                title: Text('Reminder'),
+                activeColor: Theme.of(context).primaryColor,
+                value: _isSwitchOn,
+                onChanged: (value) {
+                  setState(() {
+                    _isSwitchOn = value;
+                    if (!_isSwitchOn) {
+                      _alertList.clear();
+                      _selectedType.clear();
+                      _selectedValue.clear();
+                      _isDoneSelected = false;
+                    }
+                  });
+                }),
+            ..._displayAlert(),
+            _buildAddReminderTile(),
+          ],
+        ),
+      ),
+    ));
   }
 }

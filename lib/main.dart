@@ -1,13 +1,9 @@
 import 'package:expiry_reminder/pages/introScreen.dart';
 import 'package:expiry_reminder/utils/ThemeData.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 // import pages
-import './pages/homePage.dart';
-import 'pages/Product/addProductPage.dart';
-import 'pages/Product/viewProductPage.dart';
 
 void main() async {
   ErrorWidget.builder = (FlutterErrorDetails details) {

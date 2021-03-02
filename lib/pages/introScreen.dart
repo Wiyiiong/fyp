@@ -15,6 +15,7 @@ class IntroScreen extends StatelessWidget {
             ? HomePage(
                 currentUserId: user.uid,
               )
+            // ? FirstTimeIntro()
             : LogInPage(),
         seconds: 5,
         title: Text(

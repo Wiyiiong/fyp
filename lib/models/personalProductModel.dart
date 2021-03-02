@@ -11,6 +11,7 @@ class PersonalProduct {
   final int numStocks;
   final DateTime expiryDate;
   final String category;
+  final bool isDeleted;
   List<Alert> alerts;
 
   PersonalProduct({
@@ -22,6 +23,7 @@ class PersonalProduct {
     this.numStocks,
     this.expiryDate,
     this.category,
+    this.isDeleted,
   });
 
   factory PersonalProduct.fromDoc(DocumentSnapshot doc) {
@@ -34,6 +36,7 @@ class PersonalProduct {
       numStocks: doc['numStocks'],
       expiryDate: DateTime.parse(doc['expiryDate']),
       category: doc['category'],
+      isDeleted: doc['isDeleted'],
     );
   }
 }

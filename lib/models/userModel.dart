@@ -5,9 +5,6 @@ class User {
   final String name;
   final String email;
   final String phoneNumber;
-  final String facebookToken;
-  final String gmailToken;
-  final String twitterToken;
   final bool isEmailVerify;
   final bool isPhoneVerify;
   final bool isDeleted;
@@ -20,9 +17,6 @@ class User {
       this.name,
       this.email,
       this.phoneNumber,
-      this.facebookToken,
-      this.gmailToken,
-      this.twitterToken,
       this.isEmailVerify,
       this.isPhoneVerify,
       this.isDeleted,
@@ -36,15 +30,14 @@ class User {
       name: doc['name'],
       email: doc['email'],
       phoneNumber: doc['phoneNumber'],
-      facebookToken: doc['facebookToken'],
-      gmailToken: doc['gmailToken'],
-      twitterToken: doc['twitterToken'],
       isEmailVerify: doc['isEmailVerify'],
       isPhoneVerify: doc['isPhoneVerify'],
       isDeleted: doc['isDeleted'],
       preferredAlertTime: doc['preferredAlertTime'],
-      createdDateTime: doc['createdDatetime'].toDate(),
-      modifiedDateTime: doc['modifyDatetime'].toDate(),
+      createdDateTime:
+          DateTime.fromMillisecondsSinceEpoch(doc['createdDatetime']),
+      modifiedDateTime:
+          DateTime.fromMillisecondsSinceEpoch(doc['modifyDatetime']),
     );
   }
 }

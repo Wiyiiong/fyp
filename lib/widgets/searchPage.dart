@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/models/personalProductModel.dart';
+import 'package:expiry_reminder/pages/Product/viewProductPage.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:flutter/material.dart';
 
@@ -66,7 +67,21 @@ class SearchBarUtils extends SearchDelegate {
                 leading: Icon(Icons.history_outlined),
                 onTap: () {
                   selectedResult = suggestionList[index];
-                  showResults(context);
+                  String currentProductId = productList
+                      .where((element) => element.productName
+                          .toLowerCase()
+                          .contains(query.toLowerCase()))
+                      .first
+                      .id;
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ViewProductPage(
+                          currentUserId: currentUserId,
+                          currentProductId: currentProductId,
+                        ),
+                      ));
+                  recentList.remove(selectedResult);
                   recentList.add(selectedResult);
                 },
               ));
@@ -86,8 +101,21 @@ class SearchBarUtils extends SearchDelegate {
             title: Text(suggestionList[index]),
             onTap: () {
               selectedResult = suggestionList[index];
-              showResults(context);
               _addRecentSearch(currentUserId, selectedResult);
+              String currentProductId = productList
+                  .where((element) => element.productName
+                      .toLowerCase()
+                      .contains(query.toLowerCase()))
+                  .first
+                  .id;
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ViewProductPage(
+                      currentUserId: currentUserId,
+                      currentProductId: currentProductId,
+                    ),
+                  ));
             },
           );
         },
@@ -99,6 +127,7 @@ class SearchBarUtils extends SearchDelegate {
   @override
   Widget buildResults(BuildContext context) {
     query = selectedResult;
-    return Container(child: Center(child: Text('$selectedResult')));
+
+    return Center(child: Text('No results found'));
   }
 }

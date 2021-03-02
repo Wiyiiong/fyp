@@ -1,6 +1,7 @@
 import 'package:expiry_reminder/models/alertModel.dart';
 import 'package:expiry_reminder/models/personalProductModel.dart';
 import 'package:expiry_reminder/models/userModel.dart';
+import 'package:expiry_reminder/services/dateDetectorServices.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/services/userServices.dart';
 import 'package:expiry_reminder/widgets/ReminderAlert.dart';
@@ -14,6 +15,8 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../../utils/ThemeData.dart';
+import 'package:flutter_mobile_vision/flutter_mobile_vision.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductActionPage extends StatefulWidget {
   final String currentUserId;
@@ -55,9 +58,7 @@ class _ProductActionPageState extends State<ProductActionPage>
   // Selected items from picker and Drop down
   /// Image file for product added
   File _image;
-
-  /// Image file for date
-  File _dateImage;
+  String _imageUrl;
 
   /// Selected Category
   String _category = "None";
@@ -70,12 +71,16 @@ class _ProductActionPageState extends State<ProductActionPage>
 
   /// Selected number of stocks
   int _numStocks;
+  int _minValue;
 
   /// today's date
   DateTime today;
 
   /// reminder & alert
   List<Alert> _alertList = new List<Alert>();
+
+  /// OCR Readers
+  int _ocrCamera = FlutterMobileVision.CAMERA_BACK;
 
   bool _isSwitchedOn;
 
@@ -84,6 +89,9 @@ class _ProductActionPageState extends State<ProductActionPage>
   TextEditingController barcodeController = new TextEditingController();
   TextEditingController descriptionController = new TextEditingController();
   TextEditingController newCategoryController = new TextEditingController();
+
+  /// Page View Controllers
+  PageController pageViewController = new PageController();
 
   @override
   void initState() {
@@ -114,10 +122,9 @@ class _ProductActionPageState extends State<ProductActionPage>
 
   @override
   void dispose() {
+    super.dispose();
     _animationController.dispose();
     _focusNode.dispose();
-
-    super.dispose();
   }
 
   _setupAddProductPage() async {
@@ -133,6 +140,8 @@ class _ProductActionPageState extends State<ProductActionPage>
         _selectedDate = new DateTime.now();
         _barcode = "";
         _numStocks = 1;
+        _minValue = 1;
+        _imageUrl = null;
         today = new DateTime(
             DateTime.now().year, DateTime.now().month, DateTime.now().day);
         _alertList = [];
@@ -161,6 +170,8 @@ class _ProductActionPageState extends State<ProductActionPage>
         _selectedDate = product.expiryDate;
         _barcode = '${product.barcode ?? "-"}';
         _numStocks = product.numStocks;
+        _minValue = 0;
+        _imageUrl = product.image;
         today = new DateTime(
             DateTime.now().year, DateTime.now().month, DateTime.now().day);
         _alertList = product.alerts ?? [];
@@ -179,37 +190,35 @@ class _ProductActionPageState extends State<ProductActionPage>
     }
   }
 
+  _showLoadingDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Theme.of(context).splashColor,
+        builder: (context) => AlertDialog(
+              elevation: 0.0,
+              content: Center(child: CircularProgressIndicator()),
+              backgroundColor: Colors.transparent,
+            ));
+  }
+
+  // Future checkFirstSeen() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   bool _seen = (prefs.getBool('cropDate') ?? false);
+
+  //   if (!_seen) {
+  //     await prefs.setBool('cropDate', true);
+  //     Navigator.of(context)
+  //         .push(MaterialPageRoute(builder: (context) => FirstTimeIntro()));
+  //   }
+  // }
+
   // #region [ "Submit Form - Add Product" ]
   Future addProduct() async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
 
-      showDialog(
-          context: context,
-          barrierDismissible: true,
-          barrierColor: Theme.of(context).splashColor,
-          builder: (BuildContext context) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              elevation: 0.0,
-              child: Expanded(
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                            valueColor: new AlwaysStoppedAnimation<Color>(
-                                Theme.of(context).primaryColor)),
-                        Text('Loading...',
-                            style: Theme.of(context).primaryTextTheme.bodyText1)
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          });
+      _showLoadingDialog(context);
       String imageUrl;
       if (_image != null) {
         imageUrl = await ProductService.uploadProductImage(_image);
@@ -270,32 +279,8 @@ class _ProductActionPageState extends State<ProductActionPage>
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
 
-      showDialog(
-          context: context,
-          barrierDismissible: true,
-          barrierColor: Theme.of(context).splashColor,
-          builder: (BuildContext context) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              elevation: 0.0,
-              child: Expanded(
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                            valueColor: new AlwaysStoppedAnimation<Color>(
-                                Theme.of(context).primaryColor)),
-                        Text('Loading...',
-                            style: Theme.of(context).primaryTextTheme.bodyText1)
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          });
+      _showLoadingDialog(context);
+
       String imageUrl;
       if (_image != null) {
         imageUrl = await ProductService.uploadProductImage(_image);
@@ -335,7 +320,7 @@ class _ProductActionPageState extends State<ProductActionPage>
                       child: Icon(Icons.done_all_outlined,
                           size: 28.0,
                           color: Theme.of(context).primaryIconTheme.color)),
-                  Text('Added Successfully!',
+                  Text('Edited Successfully!',
                       style: Theme.of(context).primaryTextTheme.headline5),
                   Text('Redirect back to Home Page',
                       style: Theme.of(context).primaryTextTheme.bodyText2),
@@ -435,7 +420,7 @@ class _ProductActionPageState extends State<ProductActionPage>
               CropAspectRatioPreset.ratio3x2,
               CropAspectRatioPreset.original,
               CropAspectRatioPreset.ratio4x3,
-              CropAspectRatioPreset.ratio16x9
+              CropAspectRatioPreset.ratio16x9,
             ],
             androidUiSettings: AndroidUiSettings(
                 toolbarTitle: 'Crop Image',
@@ -445,11 +430,34 @@ class _ProductActionPageState extends State<ProductActionPage>
                 initAspectRatio: CropAspectRatioPreset.original,
                 lockAspectRatio: false),
             iosUiSettings: IOSUiSettings(
-              minimumAspectRatio: 1.0,
+              minimumAspectRatio: 0.01,
             ));
-        setState(() {
-          _dateImage = cropped ?? File(pickedFile.path);
-        });
+        print('CROPPED!!!!!!');
+        if (cropped != null) {
+          _showLoadingDialog(context);
+          DateTime date = await DateDetectorService.getPredictedResult(cropped);
+          if (date != null) {
+            String formatedDate = DateFormat('dd/MM/yyyy (EEEE)').format(date);
+            setState(() {
+              _selectedDate = date;
+              datetimeController.text = formatedDate;
+            });
+            Navigator.of(context).pop();
+          } else {
+            Navigator.of(context).pop();
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: Text('Error Occurred'),
+                      content: Text('Failed To Identify Date'),
+                      actions: [
+                        FlatButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('OKAY'))
+                      ],
+                    ));
+          }
+        }
       }
     }
   }
@@ -590,35 +598,12 @@ class _ProductActionPageState extends State<ProductActionPage>
                     if (newCategoryController.text.trim().isNotEmpty &&
                         !_dropdownListItems
                             .contains(newCategoryController.text)) {
-                      ProductService.addNewCategory(
+                      _showLoadingDialog(context);
+
+                      await ProductService.addNewCategory(
                           newCategoryController.text.trim(),
                           widget.currentUserId);
-                      showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          barrierColor: Theme.of(context).splashColor,
-                          builder: (BuildContext context) {
-                            return Dialog(
-                                backgroundColor: Colors.transparent,
-                                elevation: 0.0,
-                                child: Expanded(
-                                    child: SizedBox.expand(
-                                        child: Center(
-                                            child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircularProgressIndicator(
-                                        valueColor:
-                                            new AlwaysStoppedAnimation<Color>(
-                                                Theme.of(context)
-                                                    .primaryColor)),
-                                    Text('Loading...',
-                                        style: Theme.of(context)
-                                            .primaryTextTheme
-                                            .bodyText1)
-                                  ],
-                                )))));
-                          });
+
                       List<dynamic> dropdownListItems =
                           await ProductService.getCategory(
                               widget.currentUserId);
@@ -644,60 +629,84 @@ class _ProductActionPageState extends State<ProductActionPage>
   // #region [ "Alert Dialog - Upload Photo Alert Dialog" ]
 
   Widget _buildUploadImageDialog(BuildContext context) {
-    return new AlertDialog(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10.0))),
-      title: Text('Edit Product Photo'),
-      actions: <Widget>[
-        FlatButton(
-          child: Text('CHANGE PHOTO'),
-          onPressed: () {
-            getProductImage();
-            Navigator.of(context).pop();
-            FocusScope.of(context).unfocus();
-          },
-          padding: EdgeInsets.only(right: 20.0),
-          visualDensity: VisualDensity.compact,
-        ),
-        FlatButton(
-          child: Text('CROP PHOTO'),
-          onPressed: () {
-            cropProductImage();
-            Navigator.of(context).pop();
-            FocusScope.of(context).unfocus();
-          },
-          padding: EdgeInsets.only(right: 20.0),
-          visualDensity: VisualDensity.compact,
-        ),
-        FlatButton(
-            child: Text(
-              'REMOVE PHOTO',
+    return Container(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(padding: EdgeInsets.symmetric(vertical: 3)),
+            // Text(
+            //   'Edit Product Photo',
+            //   style: Theme.of(context).primaryTextTheme.bodyText1,
+            // ),
+            // Padding(padding: EdgeInsets.symmetric(vertical: 3)),
+            // Divider(),
+            ListTile(
+              title: Center(
+                  child: Text('CHANGE PHOTO',
+                      style: TextStyle(color: Theme.of(context).primaryColor))),
+              onTap: () {
+                getProductImage();
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
             ),
-            onPressed: () {
-              setState(() {
-                _image = null;
-              });
-              Navigator.of(context).pop();
-              FocusScope.of(context).unfocus();
-            },
-            padding: EdgeInsets.only(right: 20.0),
-            visualDensity: VisualDensity.compact,
-            textColor: danger),
-        FlatButton(
-            child: Text(
-              'CANCEL',
+            ListTile(
+              title: Center(
+                  child: Text('CROP PHOTO',
+                      style: TextStyle(color: Theme.of(context).primaryColor))),
+              onTap: () {
+                cropProductImage();
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
             ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              FocusScope.of(context).unfocus();
-            },
-            padding: EdgeInsets.only(right: 20.0),
-            visualDensity: VisualDensity.compact,
-            textColor: Theme.of(context).hintColor),
-      ],
-    );
+            ListTile(
+              title: Center(
+                  child: Text('REMOVE PHOTO', style: TextStyle(color: danger))),
+              onTap: () {
+                setState(() {
+                  _image = null;
+                });
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
+            ),
+            Divider(
+              height: 0.5,
+            ),
+            ListTile(
+              title: Center(
+                  child: Text('CANCEL',
+                      style:
+                          TextStyle(color: Theme.of(context).disabledColor))),
+              onTap: () {
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
+            ),
+          ],
+        ));
   }
   // #endregion
+
+  // #region [ "OCR - Read Product Name" ]
+  Future _readOCR() async {
+    List<OcrText> texts = [];
+    try {
+      texts = await FlutterMobileVision.read(camera: _ocrCamera, waitTap: true);
+      setState(() {
+        productNameController.text = texts[0].value;
+      });
+    } on Exception {
+      texts.add(OcrText('Failed to recognize text'));
+    }
+  }
+  // #endregion
+
+// Widget _showCropInstruction(){
+//   f+
+// }
 
   // #endregion
 
@@ -733,20 +742,49 @@ class _ProductActionPageState extends State<ProductActionPage>
                           width: MediaQuery.of(context).size.width - 40,
                           height: MediaQuery.of(context).size.height * 0.3 - 20,
                           child: InkWell(
-                            child: _image == null
-                                ? Image.asset(
-                                    'assets/image/image_placeholder.png',
-                                  )
-                                : Image.file(_image),
+                            child: widget.isEdit
+                                ? _image == null && _imageUrl == null
+                                    ? Image.asset(
+                                        'assets/image/image_placeholder.png',
+                                      )
+                                    : _image == null
+                                        ? Image.network(
+                                            _product.image,
+                                            loadingBuilder:
+                                                (BuildContext context,
+                                                    Widget child,
+                                                    ImageChunkEvent
+                                                        loadingProgress) {
+                                              if (loadingProgress == null)
+                                                return child;
+                                              return Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              );
+                                            },
+                                          )
+                                        : Image.file(_image)
+                                : _image == null
+                                    ? Image.asset(
+                                        'assets/image/image_placeholder.png',
+                                      )
+                                    : Image.file(_image),
                             splashColor: Colors.transparent,
                             onTap: () {
-                              if (_image == null) {
-                                getProductImage();
-                              } else {
-                                showDialog(
+                              if ((widget.isEdit && _imageUrl != null) ||
+                                  _image != null) {
+                                showModalBottomSheet(
                                     context: context,
                                     builder: (BuildContext context) =>
-                                        _buildUploadImageDialog(context));
+                                        _buildUploadImageDialog(context),
+                                    backgroundColor:
+                                        Theme.of(context).backgroundColor,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(20),
+                                            topRight: Radius.circular(20))));
+                              } else if (_image == null) {
+                                getProductImage();
                               }
                             },
                           ),
@@ -950,8 +988,8 @@ class _ProductActionPageState extends State<ProductActionPage>
                         });
                       },
                       maxValue: 9999,
-                      minValue: 1,
-                      initialValue: 1,
+                      minValue: _minValue,
+                      initialValue: _numStocks,
                       step: 1,
                       isResetButton: true,
                       labelText: 'Stock Number',
@@ -972,6 +1010,18 @@ class _ProductActionPageState extends State<ProductActionPage>
                       productName: productNameController.text,
                       productId: widget.productId,
                       isEdit: _isSwitchedOn,
+                    ),
+
+                    /// Padding
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                    ),
+
+                    FlatButton(
+                      child: Text('Scan Product Name Using OCR'),
+                      onPressed: () async {
+                        await _readOCR();
+                      },
                     ),
 
                     /// Padding

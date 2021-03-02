@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Expiry Reminder Application</string>
+    <string name="facebook_app_id">426411992025074</string>
+    <string name="fb_login_protocol_scheme">fb426411992025074</string>
+</resources>
