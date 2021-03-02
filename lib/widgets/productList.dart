@@ -134,7 +134,7 @@ class _ProductListState extends State<ProductList> {
       children: [
         Expanded(
             child: SizedBox(
-                height: MediaQuery.of(context).size.height * 7.5 / 10,
+                height: MediaQuery.of(context).size.height * 0.8,
                 child: ListView.builder(
                   itemCount: products.length,
                   itemBuilder: (context, i) {

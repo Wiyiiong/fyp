@@ -1,4 +1,6 @@
 import 'package:expiry_reminder/models/userModel.dart';
+import 'package:expiry_reminder/pages/SignUp/verifyEmail.dart';
+import 'package:expiry_reminder/pages/SignUp/verifyPhonePage.dart';
 import 'package:expiry_reminder/pages/introScreen.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
 import 'package:expiry_reminder/services/userServices.dart';
@@ -82,16 +84,23 @@ class _SettingsState extends State<Settings> {
 
                 /// Verify Phone
                 ListTile(
-                  title: Text('Verified Phone Number'),
-                  subtitle:
-                      Text(_user.phoneNumber ?? 'Phone number isn\'t verify'),
-                  trailing: _user.isPhoneVerify
-                      ? Icon(Icons.check_circle, color: safe)
-                      : Icon(
-                          Icons.error,
-                          color: danger,
-                        ),
-                ),
+                    title: Text('Verified Phone Number'),
+                    subtitle:
+                        Text(_user.phoneNumber ?? 'Phone number isn\'t verify'),
+                    trailing: _user.isPhoneVerify
+                        ? Icon(Icons.check_circle, color: safe)
+                        : Tooltip(
+                            message: 'The phone number is not verified',
+                            showDuration: Duration(seconds: 2),
+                            waitDuration: Duration(milliseconds: 0),
+                            child: Icon(Icons.error, color: danger),
+                          ),
+                    onTap: () {
+                      if (!_user.isPhoneVerify) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => VerifyPhone()));
+                      }
+                    }),
 
                 /// Divider
                 Divider(
@@ -105,12 +114,17 @@ class _SettingsState extends State<Settings> {
                         Text(_user.email ?? 'Email address isn\'t verify'),
                     trailing: _user.isEmailVerify
                         ? Icon(Icons.check_circle, color: safe)
-                        : Icon(
-                            Icons.error,
-                            color: danger,
+                        : Tooltip(
+                            message: 'The email address is not verified',
+                            showDuration: Duration(seconds: 2),
+                            waitDuration: Duration(seconds: 1),
+                            child: Icon(Icons.error, color: danger),
                           ),
                     onTap: () {
-                      if (!_user.isEmailVerify) {}
+                      if (!_user.isEmailVerify) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => VerifyEmail()));
+                      }
                     })
               ],
             )),

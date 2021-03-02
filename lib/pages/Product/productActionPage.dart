@@ -1,6 +1,7 @@
 import 'package:expiry_reminder/models/alertModel.dart';
 import 'package:expiry_reminder/models/personalProductModel.dart';
 import 'package:expiry_reminder/models/userModel.dart';
+import 'package:expiry_reminder/services/dateDetectorServices.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/services/userServices.dart';
 import 'package:expiry_reminder/widgets/ReminderAlert.dart';
@@ -14,6 +15,8 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../../utils/ThemeData.dart';
+import 'package:flutter_mobile_vision/flutter_mobile_vision.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductActionPage extends StatefulWidget {
   final String currentUserId;
@@ -57,9 +60,6 @@ class _ProductActionPageState extends State<ProductActionPage>
   File _image;
   String _imageUrl;
 
-  /// Image file for date
-  File _dateImage;
-
   /// Selected Category
   String _category = "None";
 
@@ -79,6 +79,9 @@ class _ProductActionPageState extends State<ProductActionPage>
   /// reminder & alert
   List<Alert> _alertList = new List<Alert>();
 
+  /// OCR Readers
+  int _ocrCamera = FlutterMobileVision.CAMERA_BACK;
+
   bool _isSwitchedOn;
 
   /// Text Editing Controllers
@@ -86,6 +89,9 @@ class _ProductActionPageState extends State<ProductActionPage>
   TextEditingController barcodeController = new TextEditingController();
   TextEditingController descriptionController = new TextEditingController();
   TextEditingController newCategoryController = new TextEditingController();
+
+  /// Page View Controllers
+  PageController pageViewController = new PageController();
 
   @override
   void initState() {
@@ -184,37 +190,35 @@ class _ProductActionPageState extends State<ProductActionPage>
     }
   }
 
+  _showLoadingDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Theme.of(context).splashColor,
+        builder: (context) => AlertDialog(
+              elevation: 0.0,
+              content: Center(child: CircularProgressIndicator()),
+              backgroundColor: Colors.transparent,
+            ));
+  }
+
+  // Future checkFirstSeen() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   bool _seen = (prefs.getBool('cropDate') ?? false);
+
+  //   if (!_seen) {
+  //     await prefs.setBool('cropDate', true);
+  //     Navigator.of(context)
+  //         .push(MaterialPageRoute(builder: (context) => FirstTimeIntro()));
+  //   }
+  // }
+
   // #region [ "Submit Form - Add Product" ]
   Future addProduct() async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
 
-      showDialog(
-          context: context,
-          barrierDismissible: true,
-          barrierColor: Theme.of(context).splashColor,
-          builder: (BuildContext context) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              elevation: 0.0,
-              child: Expanded(
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                            valueColor: new AlwaysStoppedAnimation<Color>(
-                                Theme.of(context).primaryColor)),
-                        Text('Loading...',
-                            style: Theme.of(context).primaryTextTheme.bodyText1)
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          });
+      _showLoadingDialog(context);
       String imageUrl;
       if (_image != null) {
         imageUrl = await ProductService.uploadProductImage(_image);
@@ -275,32 +279,8 @@ class _ProductActionPageState extends State<ProductActionPage>
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
 
-      showDialog(
-          context: context,
-          barrierDismissible: true,
-          barrierColor: Theme.of(context).splashColor,
-          builder: (BuildContext context) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              elevation: 0.0,
-              child: Expanded(
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                            valueColor: new AlwaysStoppedAnimation<Color>(
-                                Theme.of(context).primaryColor)),
-                        Text('Loading...',
-                            style: Theme.of(context).primaryTextTheme.bodyText1)
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          });
+      _showLoadingDialog(context);
+
       String imageUrl;
       if (_image != null) {
         imageUrl = await ProductService.uploadProductImage(_image);
@@ -440,7 +420,7 @@ class _ProductActionPageState extends State<ProductActionPage>
               CropAspectRatioPreset.ratio3x2,
               CropAspectRatioPreset.original,
               CropAspectRatioPreset.ratio4x3,
-              CropAspectRatioPreset.ratio16x9
+              CropAspectRatioPreset.ratio16x9,
             ],
             androidUiSettings: AndroidUiSettings(
                 toolbarTitle: 'Crop Image',
@@ -450,11 +430,34 @@ class _ProductActionPageState extends State<ProductActionPage>
                 initAspectRatio: CropAspectRatioPreset.original,
                 lockAspectRatio: false),
             iosUiSettings: IOSUiSettings(
-              minimumAspectRatio: 1.0,
+              minimumAspectRatio: 0.01,
             ));
-        setState(() {
-          _dateImage = cropped ?? File(pickedFile.path);
-        });
+        print('CROPPED!!!!!!');
+        if (cropped != null) {
+          _showLoadingDialog(context);
+          DateTime date = await DateDetectorService.getPredictedResult(cropped);
+          if (date != null) {
+            String formatedDate = DateFormat('dd/MM/yyyy (EEEE)').format(date);
+            setState(() {
+              _selectedDate = date;
+              datetimeController.text = formatedDate;
+            });
+            Navigator.of(context).pop();
+          } else {
+            Navigator.of(context).pop();
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: Text('Error Occurred'),
+                      content: Text('Failed To Identify Date'),
+                      actions: [
+                        FlatButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('OKAY'))
+                      ],
+                    ));
+          }
+        }
       }
     }
   }
@@ -595,35 +598,12 @@ class _ProductActionPageState extends State<ProductActionPage>
                     if (newCategoryController.text.trim().isNotEmpty &&
                         !_dropdownListItems
                             .contains(newCategoryController.text)) {
-                      ProductService.addNewCategory(
+                      _showLoadingDialog(context);
+
+                      await ProductService.addNewCategory(
                           newCategoryController.text.trim(),
                           widget.currentUserId);
-                      showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          barrierColor: Theme.of(context).splashColor,
-                          builder: (BuildContext context) {
-                            return Dialog(
-                                backgroundColor: Colors.transparent,
-                                elevation: 0.0,
-                                child: Expanded(
-                                    child: SizedBox.expand(
-                                        child: Center(
-                                            child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircularProgressIndicator(
-                                        valueColor:
-                                            new AlwaysStoppedAnimation<Color>(
-                                                Theme.of(context)
-                                                    .primaryColor)),
-                                    Text('Loading...',
-                                        style: Theme.of(context)
-                                            .primaryTextTheme
-                                            .bodyText1)
-                                  ],
-                                )))));
-                          });
+
                       List<dynamic> dropdownListItems =
                           await ProductService.getCategory(
                               widget.currentUserId);
@@ -709,6 +689,24 @@ class _ProductActionPageState extends State<ProductActionPage>
         ));
   }
   // #endregion
+
+  // #region [ "OCR - Read Product Name" ]
+  Future _readOCR() async {
+    List<OcrText> texts = [];
+    try {
+      texts = await FlutterMobileVision.read(camera: _ocrCamera, waitTap: true);
+      setState(() {
+        productNameController.text = texts[0].value;
+      });
+    } on Exception {
+      texts.add(OcrText('Failed to recognize text'));
+    }
+  }
+  // #endregion
+
+// Widget _showCropInstruction(){
+//   f+
+// }
 
   // #endregion
 
@@ -1012,6 +1010,18 @@ class _ProductActionPageState extends State<ProductActionPage>
                       productName: productNameController.text,
                       productId: widget.productId,
                       isEdit: _isSwitchedOn,
+                    ),
+
+                    /// Padding
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                    ),
+
+                    FlatButton(
+                      child: Text('Scan Product Name Using OCR'),
+                      onPressed: () async {
+                        await _readOCR();
+                      },
                     ),
 
                     /// Padding

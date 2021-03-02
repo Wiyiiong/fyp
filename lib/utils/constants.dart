@@ -36,6 +36,27 @@ final confirmPasswordErrorMsg =
 
 final phoneErrorMsg = 'Phone number is not valid. Example: 60123456789';
 
+/// Verify Phone
+final invalidPhoneErrorMsg = 'The phone number {phoneNumber} is not valid';
+
 // Settings
 /// Default alert time
 final defaultAlertTime = "12:00";
+
+// Month constants
+/// Month constants [key='MMM', value=MMM]
+/// Example: monthConst['Jan'] = 1
+final monthConst = {
+  'Jan': 1,
+  'Feb': 2,
+  'Mar': 3,
+  'Apr': 4,
+  'May': 5,
+  'Jun': 6,
+  'Jul': 7,
+  'Aug': 8,
+  'Sep': 9,
+  'Oct': 10,
+  'Nov': 11,
+  'Dec': 12
+};

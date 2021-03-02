@@ -1,18 +1,23 @@
 import 'package:expiry_reminder/models/userModel.dart';
 import 'package:expiry_reminder/pages/Product/productActionPage.dart';
+import 'package:expiry_reminder/pages/firstTimeIntroPage.dart';
+import 'package:expiry_reminder/pages/introScreen.dart';
 import 'package:expiry_reminder/services/userServices.dart';
+import 'package:expiry_reminder/services/userAuthServices.dart';
 import 'package:expiry_reminder/widgets/productList.dart';
 import 'package:expiry_reminder/widgets/MyDrawer.dart';
 import 'package:expiry_reminder/widgets/dashboard.dart';
 import 'package:expiry_reminder/widgets/searchPage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/personalProductModel.dart';
 import '../services/productServices.dart';
 
 class HomePage extends StatefulWidget {
   final String currentUserId;
 
-  HomePage({this.currentUserId});
+  HomePage({@required this.currentUserId});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -29,10 +34,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   _setupHomePage() async {
-    await ProductService.prepareProductList(widget.currentUserId);
+    User userDetails =
+        await UserService.getUserDetails(widget.currentUserId).catchError((e) {
+      UserAuthService.signOut();
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => IntroScreen()),
+          (route) => false);
+    });
+    await ProductService.prepareProductList(userDetails.id);
     List<PersonalProduct> products =
-        await ProductService.getProducts(widget.currentUserId);
-    User userDetails = await UserService.getUserDetails(widget.currentUserId);
+        await ProductService.getProducts(userDetails.id);
+
+    await checkFirstSeen();
     if (mounted) {
       setState(() {
         _products = products;
@@ -41,11 +55,22 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future checkFirstSeen() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool _seen = (prefs.getBool('seen') ?? false);
+
+    if (!_seen) {
+      await prefs.setBool('seen', true);
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => FirstTimeIntro()));
+    }
+  }
+
   // #region [ "Widget - Search Bar" ]
   Widget _buildSearchBar() {
     return Container(
         child: SizedBox(
-      height: MediaQuery.of(context).size.height * 0.5 / 10,
+      height: MediaQuery.of(context).size.height * 0.06,
       width: MediaQuery.of(context).size.width,
       child: Center(
         child: GestureDetector(

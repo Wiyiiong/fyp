@@ -40,7 +40,7 @@ class ShoppingListService {
         'createdDateTime': shoppingList.createdDateTime.toString(),
       });
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -57,9 +57,9 @@ class ShoppingListService {
         'description': newShoppingList.description,
         'isDone': newShoppingList.isDone,
         'createdDateTime': newShoppingList.createdDateTime.toString(),
-      }).catchError((e) => print(e));
+      }).catchError((e) => print(e.message));
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -80,9 +80,9 @@ class ShoppingListService {
           .collection('shoppingList')
           .doc(shoppingListId)
           .delete()
-          .catchError((e) => print(e));
+          .catchError((e) => print(e.message));
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -93,9 +93,9 @@ class ShoppingListService {
           .doc(userId)
           .collection('shoppingList')
           .doc(shoppingListId)
-          .update({'isDone': isDone}).catchError((e) => print(e));
+          .update({'isDone': isDone}).catchError((e) => print(e.message));
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -116,11 +116,11 @@ class ShoppingListService {
   //             .collection('personalProducts')
   //             .doc(shoppingListItem['productId'])
   //             .delete()
-  //             .catchError((e) => print(e));
+  //             .catchError((e) => print(e.message));
   //       }
   //     }
   //   } catch (e) {
-  //     print(e);
+  //     print(e.message);
   //   }
   // }
 

@@ -13,11 +13,10 @@ class UserService {
   static Future changeAlertTime(String userId, TimeOfDay alertTime) async {
     String time = "${alertTime.hour}:${alertTime.minute}";
     try {
-      await userRef
-          .doc(userId)
-          .update({'preferredAlertTime': time}).catchError((e) => print(e));
+      await userRef.doc(userId).update({'preferredAlertTime': time}).catchError(
+          (e) => print(e.message));
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 }

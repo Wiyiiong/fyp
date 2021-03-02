@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:expiry_reminder/pages/SignUp/verifyEmail.dart';
 
 class LogInPage extends StatefulWidget {
   @override
@@ -21,19 +22,25 @@ class _LogInPageState extends State<LogInPage> {
 
   Widget _buildAlertDialog(String errorMsg) {
     return AlertDialog(
-      title: Center(
-        child: Row(mainAxisSize: MainAxisSize.max, children: [
-          Icon(Icons.error_outline, color: Colors.red),
-          Padding(padding: EdgeInsets.symmetric(horizontal: 10.0)),
-          Text('Error!')
-        ]),
-      ),
+      title: Center(child: Text('Sign In Failed')),
       content: Text(errorMsg),
       actions: [
         FlatButton(
             onPressed: () => Navigator.of(context).pop(), child: Text('OKAY'))
       ],
     );
+  }
+
+  _showLoadingDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Theme.of(context).splashColor,
+        builder: (context) => AlertDialog(
+              elevation: 0.0,
+              content: Center(child: CircularProgressIndicator()),
+              backgroundColor: Colors.transparent,
+            ));
   }
 
   @override
@@ -79,7 +86,7 @@ class _LogInPageState extends State<LogInPage> {
                 )),
             // Padding(padding: EdgeInsets.symmetric(vertical: 20.0)),
             Expanded(
-              flex: 4,
+              flex: 5,
               child: SizedBox.expand(
                 child: Center(
                   child: FormBuilder(
@@ -199,20 +206,34 @@ class _LogInPageState extends State<LogInPage> {
                                   onPressed: () async {
                                     if (_formKey.currentState
                                         .saveAndValidate()) {
+                                      _showLoadingDialog(context);
                                       Map<int, String> userId =
                                           await UserAuthService.signInEmail(
                                               emailController.text,
                                               passwordController.text);
+                                      Navigator.of(context).pop();
                                       if (userId.keys.first == successCode) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => HomePage(
-                                              currentUserId:
-                                                  userId[successCode],
+                                        var user =
+                                            UserAuthService.getCurrentUser();
+                                        if (user.emailVerified) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => HomePage(
+                                                currentUserId:
+                                                    userId[successCode],
+                                              ),
                                             ),
-                                          ),
-                                        );
+                                          );
+                                        } else {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  VerifyEmail(),
+                                            ),
+                                          );
+                                        }
                                       } else {
                                         showDialog(
                                             context: context,
@@ -266,7 +287,23 @@ class _LogInPageState extends State<LogInPage> {
                               SignInButton(
                                 Buttons.Facebook,
                                 mini: true,
-                                onPressed: () {},
+                                onPressed: () {
+                                  UserAuthService.signInWithFacebook()
+                                      .then((result) => {
+                                            if (result != null)
+                                              {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        HomePage(
+                                                      currentUserId: result,
+                                                    ),
+                                                  ),
+                                                )
+                                              }
+                                          });
+                                },
                               ),
                               SignInButtonBuilder(
                                   backgroundColor: Colors.white,
@@ -291,11 +328,27 @@ class _LogInPageState extends State<LogInPage> {
                                   mini: true,
                                   image: Image.asset(
                                       'assets/image/google_icon.png')),
-                              SignInButton(
-                                Buttons.Twitter,
-                                mini: true,
-                                onPressed: () {},
-                              ),
+                              // SignInButton(
+                              //   Buttons.Twitter,
+                              //   mini: true,
+                              //   onPressed: () {
+                              //     UserAuthService.signInWithTwitter()
+                              //         .then((result) => {
+                              //               if (result != null)
+                              //                 {
+                              //                   Navigator.push(
+                              //                     context,
+                              //                     MaterialPageRoute(
+                              //                       builder: (context) =>
+                              //                           HomePage(
+                              //                         currentUserId: result,
+                              //                       ),
+                              //                     ),
+                              //                   )
+                              //                 }
+                              //             });
+                              //   },
+                              // ),
                             ]),
                       ])),
                 ),

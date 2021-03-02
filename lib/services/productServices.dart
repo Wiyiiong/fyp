@@ -236,7 +236,7 @@ class ProductService {
         return true;
       }
     } catch (e) {
-      print(e);
+      print(e.message);
     }
     return false;
   }
@@ -283,7 +283,7 @@ class ProductService {
       }
       return true;
     } catch (e) {
-      print(e);
+      print(e.message);
       return false;
     }
   }
@@ -302,14 +302,16 @@ class ProductService {
             .get()
             .then((alertSnapshot) async {
           for (DocumentSnapshot alertds in alertSnapshot.docs) {
-            await alertds.reference.delete().catchError((e) => print(e));
+            await alertds.reference
+                .delete()
+                .catchError((e) => print(e.message));
           }
         });
         await productSnapshot.reference
-            .update({'isDeleted': true}).catchError((e) => print(e));
+            .update({'isDeleted': true}).catchError((e) => print(e.message));
       }
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -327,24 +329,28 @@ class ProductService {
             .get()
             .then((alertSnapshot) async {
           for (DocumentSnapshot alertds in alertSnapshot.docs) {
-            await alertds.reference.delete().catchError((e) => print(e));
+            await alertds.reference
+                .delete()
+                .catchError((e) => print(e.message));
           }
         });
-        await productSnapshot.reference.delete().catchError((e) => print(e));
+        await productSnapshot.reference
+            .delete()
+            .catchError((e) => print(e.message));
       }
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
   /// Add new personal category
-  static void addNewCategory(String category, String userId) {
+  static Future addNewCategory(String category, String userId) async {
     try {
-      userRef.doc(userId).collection('unuseCategory').add({
+      await userRef.doc(userId).collection('unuseCategory').add({
         'categoryName': category,
       });
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -362,10 +368,10 @@ class ProductService {
             .collection('unuseCategory')
             .doc(snapshot.docs.first.id)
             .delete()
-            .catchError((e) => print(e));
+            .catchError((e) => print(e.message));
       }
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -384,7 +390,8 @@ class ProductService {
             .doc(userId)
             .collection('unuseCategory')
             .doc(unusedCategorySnapshot.docs.first.id)
-            .update({'categoryName': newCategory}).catchError((e) => print(e));
+            .update({'categoryName': newCategory}).catchError(
+                (e) => print(e.message));
       }
       // search in all products
       QuerySnapshot usedCategorySnapshot = await userRef
@@ -399,12 +406,12 @@ class ProductService {
               .collection('personalProducts')
               .doc(ds.id)
               .get();
-          await product.reference
-              .update({'category': newCategory}).catchError((e) => print(e));
+          await product.reference.update({'category': newCategory}).catchError(
+              (e) => print(e.message));
         }
       }
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -423,7 +430,7 @@ class ProductService {
             .collection('unuseCategory')
             .doc(unusedCategorySnapshot.docs.first.id)
             .delete()
-            .catchError((e) => print(e));
+            .catchError((e) => print(e.message));
       }
       // search in personal product
       QuerySnapshot productSnapshot = await userRef
@@ -448,18 +455,18 @@ class ProductService {
                   .collection('alert')
                   .doc(alertds.id)
                   .delete()
-                  .catchError((e) => print(e));
+                  .catchError((e) => print(e.message));
             }
           }
           await userRef
               .doc(userId)
               .collection('personalProducts')
               .doc(productds.id)
-              .update({'isDeleted': true}).catchError((e) => print(e));
+              .update({'isDeleted': true}).catchError((e) => print(e.message));
         }
       }
     } catch (e) {
-      print(e);
+      print(e.message);
     }
   }
 
@@ -473,7 +480,7 @@ class ProductService {
       TaskSnapshot snapshot = await task;
       downloadUrl = await snapshot.ref.getDownloadURL();
     } on FirebaseException catch (e) {
-      print(e);
+      print(e.message);
     }
     return downloadUrl;
   }

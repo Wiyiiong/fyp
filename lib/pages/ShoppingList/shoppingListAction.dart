@@ -77,6 +77,18 @@ class _ShoppingListActionState extends State<ShoppingListAction> {
     });
   }
 
+  _showLoadingDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Theme.of(context).splashColor,
+        builder: (context) => AlertDialog(
+              elevation: 0.0,
+              content: Center(child: CircularProgressIndicator()),
+              backgroundColor: Colors.transparent,
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -140,36 +152,7 @@ class _ShoppingListActionState extends State<ShoppingListAction> {
                 if (_formKey.currentState.validate()) {
                   _formKey.currentState.save();
 
-                  showDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      barrierColor: Theme.of(context).splashColor,
-                      builder: (BuildContext context) {
-                        return Dialog(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0.0,
-                          child: Expanded(
-                            child: SizedBox.expand(
-                              child: Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircularProgressIndicator(
-                                        valueColor:
-                                            new AlwaysStoppedAnimation<Color>(
-                                                Theme.of(context)
-                                                    .primaryColor)),
-                                    Text('Loading...',
-                                        style: Theme.of(context)
-                                            .primaryTextTheme
-                                            .bodyText1)
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      });
+                  _showLoadingDialog(context);
 
                   if (widget.isEdit) {
                     ShoppingList shoppingListItem = new ShoppingList(
