@@ -52,12 +52,9 @@ class _HomePageState extends State<HomePage> {
         await ProductService.getProducts(userDetails.id);
 
     await checkFirstSeen();
-
-    await CloudMessagingService.requestPermissions();
-    await CloudMessagingService.saveTokenToDB();
     FirebaseMessaging.instance.onTokenRefresh
         .listen(await CloudMessagingService.saveTokenToDB());
-    displayNotification();
+    await CloudMessagingService.getNotification(context);
 
     if (mounted) {
       setState(() {
@@ -73,36 +70,11 @@ class _HomePageState extends State<HomePage> {
 
     if (!_seen) {
       await prefs.setBool('seen', true);
+      // await CloudMessagingService.requestPermissions();
+
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => FirstTimeIntro()));
     }
-  }
-
-  void displayNotification() async {
-    NotificationService.initNotification(context);
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification notification = message.notification;
-      AndroidNotification android = message.notification?.android;
-      if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channel.description,
-                icon: android?.smallIcon,
-                // other properties...
-              ),
-            ));
-      }
-    });
   }
 
   // #region [ "Widget - Search Bar" ]

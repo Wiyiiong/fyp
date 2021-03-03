@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/models/personalProductModel.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
 import 'package:expiry_reminder/widgets/productList.dart';
@@ -32,6 +33,7 @@ class _ProductByCategoryState extends State<ProductByCategory> {
     // TODO: implement initState
     super.initState();
     _setupProductByCategory();
+    // CloudMessagingService.getNotification(context);
   }
 
   @override

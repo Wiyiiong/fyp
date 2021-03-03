@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/models/shoppingListModel.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/services/shoppingListService.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,7 @@ class _ShoppingListActionState extends State<ShoppingListAction> {
     // TODO: implement initState
     super.initState();
     widget.isEdit ? _setupEditShoppingList() : _setupAddShoppingList();
+    // CloudMessagingService.getNotification(context);
   }
 
   void _setupEditShoppingList() {

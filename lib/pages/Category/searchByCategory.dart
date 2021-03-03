@@ -1,3 +1,4 @@
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
 import 'package:expiry_reminder/utils/ThemeData.dart';
@@ -28,6 +29,7 @@ class _SearchByCategoryState extends State<SearchByCategory> {
   void initState() {
     super.initState();
     _setupCategory();
+    // CloudMessagingService.getNotification(context);
   }
 
   _setupCategory() async {

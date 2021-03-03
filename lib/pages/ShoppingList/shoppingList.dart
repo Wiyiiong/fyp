@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:expiry_reminder/models/personalProductModel.dart';
 import 'package:expiry_reminder/models/shoppingListModel.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/services/shoppingListService.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
@@ -28,6 +29,7 @@ class _ViewShoppingListState extends State<ViewShoppingList> {
   void initState() {
     super.initState();
     _setupShoppingList();
+    // CloudMessagingService.getNotification(context);
   }
 
   _setupShoppingList() async {

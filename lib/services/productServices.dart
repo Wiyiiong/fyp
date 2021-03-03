@@ -227,9 +227,11 @@ class ProductService {
               .doc(docRef.id)
               .collection('alert')
               .add({
-            'alertDatetime': product.alerts[i].alertDatetime,
+            'alertDatetime':
+                Timestamp.fromDate(product.alerts[i].alertDatetime),
             'alertName': product.alerts[i].alertName,
-            'alertType': product.alerts[i].alertIndex
+            'alertType': product.alerts[i].alertIndex,
+            'isAlert': false,
           });
         }
 
@@ -275,9 +277,11 @@ class ProductService {
               .collection('alert')
               .doc(product.alerts[i].id)
               .set({
-            'alertDatetime': product.alerts[i].alertDatetime,
+            'alertDatetime':
+                Timestamp.fromDate(product.alerts[i].alertDatetime),
             'alertName': product.alerts[i].alertName,
             'alertType': product.alerts[i].alertIndex,
+            'isAlert': false
           }, SetOptions(merge: true));
         }
       }

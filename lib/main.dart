@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/pages/introScreen.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/utils/ThemeData.dart';
 import 'package:expiry_reminder/utils/constants.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -38,12 +39,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await Firebase.initializeApp();
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-
+  await Firebase.initializeApp();
   runApp(App());
 }
 

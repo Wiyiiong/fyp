@@ -75,6 +75,9 @@ flutter:
     - assets/image/intro1.jpg
     - assets/image/intro2.jpg
     - assets/image/intro3.jpg
+    - assets/image/instruction.jpg
+    - assets/image/instruction2.jpg
+    - assets/image/instruction3.jpg
     - assets/model/label.txt
     - assets/model/model.tflite
     - assets/model/label-digits.txt

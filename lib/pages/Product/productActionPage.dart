@@ -1,6 +1,8 @@
 import 'package:expiry_reminder/models/alertModel.dart';
 import 'package:expiry_reminder/models/personalProductModel.dart';
 import 'package:expiry_reminder/models/userModel.dart';
+import 'package:expiry_reminder/pages/Product/InstructionPage.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/services/dateDetectorServices.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/services/userServices.dart';
@@ -118,6 +120,8 @@ class _ProductActionPageState extends State<ProductActionPage>
         _animationController.reverse();
       }
     });
+
+    CloudMessagingService.getNotification(context);
   }
 
   @override
@@ -202,16 +206,19 @@ class _ProductActionPageState extends State<ProductActionPage>
             ));
   }
 
-  // Future checkFirstSeen() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   bool _seen = (prefs.getBool('cropDate') ?? false);
+  Future checkFirstCrop() async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // bool _seen = (prefs.getBool('cropDate') ?? false);
 
-  //   if (!_seen) {
-  //     await prefs.setBool('cropDate', true);
-  //     Navigator.of(context)
-  //         .push(MaterialPageRoute(builder: (context) => FirstTimeIntro()));
-  //   }
-  // }
+    // if (!_seen) {
+    // await prefs.setBool('cropDate', true);
+    Navigator.of(context)
+        .push(PageRouteBuilder(
+            fullscreenDialog: true,
+            pageBuilder: (BuildContext context, _, __) => InstructionPage()))
+        .then((value) => getDateImage());
+    // }
+  }
 
   // #region [ "Submit Form - Add Product" ]
   Future addProduct() async {
@@ -704,10 +711,6 @@ class _ProductActionPageState extends State<ProductActionPage>
   }
   // #endregion
 
-// Widget _showCropInstruction(){
-//   f+
-// }
-
   // #endregion
 
   // #region [ "Widget - Add Product Form" ]
@@ -908,7 +911,7 @@ class _ProductActionPageState extends State<ProductActionPage>
                                   widthFactor: 5.0,
                                   child: TextButton.icon(
                                     onPressed: () {
-                                      getDateImage();
+                                      checkFirstCrop();
                                     },
                                     icon: Icon(Icons.center_focus_weak_outlined,
                                         size: 18),

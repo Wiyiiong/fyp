@@ -1,6 +1,7 @@
 import 'package:expiry_reminder/models/alertModel.dart';
 import 'package:expiry_reminder/models/personalProductModel.dart';
 import 'package:expiry_reminder/models/shoppingListModel.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/services/shoppingListService.dart';
 import 'package:expiry_reminder/utils/ThemeData.dart';
@@ -35,6 +36,7 @@ class _ViewProductPageState extends State<ViewProductPage>
   void initState() {
     super.initState();
     _setupViewProductPage();
+    // CloudMessagingService.getNotification(context);
   }
 
   _setupViewProductPage() async {

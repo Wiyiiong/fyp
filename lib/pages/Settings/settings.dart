@@ -2,6 +2,7 @@ import 'package:expiry_reminder/models/userModel.dart';
 import 'package:expiry_reminder/pages/SignUp/verifyEmail.dart';
 import 'package:expiry_reminder/pages/SignUp/verifyPhonePage.dart';
 import 'package:expiry_reminder/pages/introScreen.dart';
+import 'package:expiry_reminder/services/cloudMessagingServices.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
 import 'package:expiry_reminder/services/userServices.dart';
 import 'package:expiry_reminder/utils/ThemeData.dart';
@@ -23,6 +24,7 @@ class _SettingsState extends State<Settings> {
     // TODO: implement initState
     super.initState();
     _setupSettings();
+    // CloudMessagingService.getNotification(context);
   }
 
   _setupSettings() async {

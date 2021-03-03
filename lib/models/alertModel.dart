@@ -12,12 +12,14 @@ class Alert {
   final String alertName;
   // final AlertType alertType;
   final DateTime alertDatetime;
+  final bool isAlert;
 
   Alert({
     this.id = "",
     this.alertIndex,
     this.alertName,
     this.alertDatetime,
+    this.isAlert,
   });
 
   AlertType getAlertType(int alertIndex) {
@@ -30,6 +32,7 @@ class Alert {
       alertName: doc['alertName'],
       alertDatetime: doc['alertDatetime'].toDate(),
       alertIndex: List.castFrom(doc['alertType']),
+      isAlert: doc['isAlert'],
     );
   }
 }
