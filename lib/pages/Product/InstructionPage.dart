@@ -292,7 +292,7 @@ class _InstructionPageState extends State<InstructionPage> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 10),
                 ),
-                Text("Not All Format Is Recognisable",
+                Text("Not All Format are Recognisable",
                     style: Theme.of(context).primaryTextTheme.headline5),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 15),
@@ -328,7 +328,7 @@ class _InstructionPageState extends State<InstructionPage> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     String.fromCharCode(0x2022) +
-                        " Date Range From 2021 to 2024",
+                        " Date Range From 2021 to 2025",
                     style: Theme.of(context).primaryTextTheme.bodyText1,
                     textAlign: TextAlign.left,
                   ),

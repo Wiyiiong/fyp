@@ -124,7 +124,8 @@ class _FirstTimeIntroState extends State<FirstTimeIntro> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 50),
                 ),
-                Text("Getting Started By Adding A New Product",
+                Text(
+                    "Getting Started By Verify Your Phone Number For Full Functionality",
                     style: Theme.of(context).primaryTextTheme.headline5),
               ],
             ),

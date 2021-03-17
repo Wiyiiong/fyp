@@ -8,7 +8,6 @@ import 'package:flutter/services.dart' show rootBundle;
 class DateDetectorService {
   static Future<DateTime> getPredictedResult(File image) async {
     Tflite.close();
-
     DateTime date;
     try {
       await Tflite.loadModel(
@@ -83,6 +82,7 @@ class DateDetectorService {
             date = new DateTime(year, month, day);
           }
         }
+        Tflite.close();
         return date;
       }
     } catch (e) {

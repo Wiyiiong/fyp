@@ -66,7 +66,7 @@ class _ShoppingListActionState extends State<ShoppingListAction> {
                         style: Theme.of(context).primaryTextTheme.headline5)
                     : Text('Added Successfully!',
                         style: Theme.of(context).primaryTextTheme.headline5),
-                Text('Redirect back to Home Page',
+                Text('Redirect back to Previous Page',
                     style: Theme.of(context).primaryTextTheme.bodyText2),
                 Padding(padding: EdgeInsets.symmetric(vertical: 20.0))
               ],

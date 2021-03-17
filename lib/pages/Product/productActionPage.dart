@@ -207,17 +207,19 @@ class _ProductActionPageState extends State<ProductActionPage>
   }
 
   Future checkFirstCrop() async {
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // bool _seen = (prefs.getBool('cropDate') ?? false);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool _seen = (prefs.getBool('cropDate') ?? false);
 
-    // if (!_seen) {
-    // await prefs.setBool('cropDate', true);
-    Navigator.of(context)
-        .push(PageRouteBuilder(
-            fullscreenDialog: true,
-            pageBuilder: (BuildContext context, _, __) => InstructionPage()))
-        .then((value) => getDateImage());
-    // }
+    if (!_seen) {
+      await prefs.setBool('cropDate', true);
+      Navigator.of(context)
+          .push(PageRouteBuilder(
+              fullscreenDialog: true,
+              pageBuilder: (BuildContext context, _, __) => InstructionPage()))
+          .then((value) => getDateImage());
+    } else {
+      await getDateImage();
+    }
   }
 
   // #region [ "Submit Form - Add Product" ]
