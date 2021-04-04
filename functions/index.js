@@ -27,7 +27,6 @@ admin.initializeApp({
 const database = admin.firestore();
 
 exports.sendNotification = functions.pubsub.schedule('* * * * *').onRun(async (context)=>{
-    const twilioNumber = "+15153165896";
     var promises = [];
         const users = await database.collection('users').get();
         users.forEach(async userDoc =>{
@@ -67,11 +66,16 @@ exports.sendNotification = functions.pubsub.schedule('* * * * *').onRun(async (c
                                     const formatPhoneNumber = phoneNumber.replace(" ","").replace("-","").replace(" ","");
                                    console.log(formatPhoneNumber);
 
-                                    promises.push(client.messages.create({
-                                        body:  `Dear ${userName}, ${productName} is expiring on ${expiryDate}. -By Expiry Reminder App`,
-                                        to: formatPhoneNumber,  // Text to this number
-                                        from: twilioNumber // From a valid Twilio number
-                                    }));
+                                    promises.push(client.messages 
+                                        .create({ 
+                                           body:  `Dear ${userName}, ${productName} is expiring on ${expiryDate}. -By Expiry Reminder App`,  
+                                           messagingServiceSid: 'MGea8a242de7bbef7616f530b4b79a414b',      
+                                           to: formatPhoneNumber 
+                                         }) 
+                                        .then(message => console.log(message.sid)) 
+                                        .done()
+                                    );
+                                    
                                     await database.collection('users').doc(userDoc.id).collection('personalProducts').doc(productDoc.id).collection('alert').doc(alertDoc.id).update({
                                         "isAlert":true,
                                     });

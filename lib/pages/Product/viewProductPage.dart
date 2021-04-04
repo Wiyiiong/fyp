@@ -432,7 +432,7 @@ class _ViewProductPageState extends State<ViewProductPage>
                                 onPressed: () async {
                                   showDialog(
                                       context: context,
-                                      barrierDismissible: true,
+                                      barrierDismissible: false,
                                       barrierColor:
                                           Theme.of(context).splashColor,
                                       builder: (BuildContext context) {

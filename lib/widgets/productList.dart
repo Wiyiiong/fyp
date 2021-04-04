@@ -1,4 +1,5 @@
 import 'package:expiry_reminder/pages/Product/viewProductPage.dart';
+import 'package:expiry_reminder/services/productServices.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -146,10 +147,139 @@ class _ProductListState extends State<ProductList> {
                           MaterialPageRoute(
                             builder: (context) => ViewProductPage(
                               currentUserId: widget.currentUserId,
-                              currentProductId: widget.productList[i].id,
+                              currentProductId: products[i].id,
                             ),
                           ),
                         ).then((value) => widget.setupMethod);
+                      },
+                      onLongPress: () async {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Delete Product'),
+                                content: RichText(
+                                    text: TextSpan(
+                                        text:
+                                            'Are you sure you want to delete ',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            color: Theme.of(context)
+                                                .primaryTextTheme
+                                                .bodyText2
+                                                .color,
+                                            height: 1.2),
+                                        children: <TextSpan>[
+                                      TextSpan(
+                                          text: '${products[i].productName} ',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                      TextSpan(
+                                        text: '?',
+                                      )
+                                    ])),
+                                actions: [
+                                  FlatButton(
+                                    child: Text('CANCEL',
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .disabledColor)),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  FlatButton(
+                                    child: Text('DELETE'),
+                                    onPressed: () async {
+                                      showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          barrierColor:
+                                              Theme.of(context).splashColor,
+                                          builder: (BuildContext context) {
+                                            return Dialog(
+                                              backgroundColor:
+                                                  Colors.transparent,
+                                              elevation: 0.0,
+                                              child: Expanded(
+                                                child: SizedBox.expand(
+                                                  child: Center(
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        CircularProgressIndicator(
+                                                            valueColor: new AlwaysStoppedAnimation<
+                                                                Color>(Theme.of(
+                                                                    context)
+                                                                .primaryColor)),
+                                                        Text('Loading...',
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .primaryTextTheme
+                                                                .bodyText1)
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          });
+                                      await ProductService
+                                          .permanentDeleteProduct(
+                                              widget.currentUserId,
+                                              products[i].id);
+                                      Navigator.of(context).pop();
+                                      products.removeAt(i);
+                                      showDialog(
+                                          context: context,
+                                          barrierDismissible: true,
+                                          barrierColor:
+                                              Theme.of(context).splashColor,
+                                          builder: (BuildContext context) {
+                                            return Dialog(
+                                                child: Container(
+                                              padding: EdgeInsets.all(20.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Center(
+                                                      child: Icon(
+                                                          Icons
+                                                              .done_all_outlined,
+                                                          size: 28.0,
+                                                          color: Theme.of(
+                                                                  context)
+                                                              .primaryIconTheme
+                                                              .color)),
+                                                  Text('Deleted Successfully!',
+                                                      style: Theme.of(context)
+                                                          .primaryTextTheme
+                                                          .headline5),
+                                                  Text(
+                                                      'Redirect back to Home Page',
+                                                      style: Theme.of(context)
+                                                          .primaryTextTheme
+                                                          .bodyText2),
+                                                  Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 20.0))
+                                                ],
+                                              ),
+                                            ));
+                                          });
+                                      new Future.delayed(
+                                          new Duration(seconds: 3), () {
+                                        Navigator.pop(context); //pop dialog
+                                        Navigator.pop(
+                                            context); // pop success dialog
+                                      });
+                                    },
+                                  )
+                                ],
+                              );
+                            });
                       },
                       child: Card(
                           child: Container(

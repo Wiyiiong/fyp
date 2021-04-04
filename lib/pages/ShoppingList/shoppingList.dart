@@ -149,6 +149,19 @@ class _ViewShoppingListState extends State<ViewShoppingList> {
                                   ShoppingList shoppingListItem =
                                       shoppingList[index];
                                   return Dismissible(
+                                    background: Container(),
+                                    secondaryBackground: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 28, horizontal: 20),
+                                        color: danger,
+                                        child: Text(
+                                          'Delete Item',
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .backgroundColor,
+                                              backgroundColor: danger),
+                                          textAlign: TextAlign.end,
+                                        )),
                                     key: Key(shoppingListItem.productName),
                                     onDismissed: (direction) async {
                                       await ShoppingListService

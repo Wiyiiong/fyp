@@ -260,31 +260,41 @@ class ProductService {
         'numStocks': product.numStocks,
         'productName': product.productName,
       }, SetOptions(merge: true));
-      QuerySnapshot alertSnapshot = await userRef
+
+      DocumentSnapshot productSnapshot = await userRef
           .doc(userId)
           .collection('personalProducts')
           .doc(product.id)
-          .collection('alert')
           .get();
-      List<Alert> alerts =
-          alertSnapshot.docs.map((doc) => Alert.fromDoc(doc)).toList();
-      for (int i = 0; i < product.alerts.length; i++) {
-        if (alerts.contains(product.alerts[i])) {
-          await userRef
-              .doc(userId)
-              .collection('personalProducts')
-              .doc(product.id)
-              .collection('alert')
-              .doc(product.alerts[i].id)
-              .set({
-            'alertDatetime':
-                Timestamp.fromDate(product.alerts[i].alertDatetime),
-            'alertName': product.alerts[i].alertName,
-            'alertType': product.alerts[i].alertIndex,
-            'isAlert': false
-          }, SetOptions(merge: true));
-        }
+
+      if (productSnapshot.exists) {
+        productSnapshot.reference
+            .collection('alert')
+            .get()
+            .then((alertSnapshot) async {
+          for (DocumentSnapshot alertds in alertSnapshot.docs) {
+            await alertds.reference
+                .delete()
+                .catchError((e) => print(e.message));
+          }
+        }).then((value) async {
+          for (int i = 0; i < product.alerts.length; i++) {
+            await userRef
+                .doc(userId)
+                .collection('personalProducts')
+                .doc(product.id)
+                .collection('alert')
+                .add({
+              'alertDatetime':
+                  Timestamp.fromDate(product.alerts[i].alertDatetime),
+              'alertName': product.alerts[i].alertName,
+              'alertType': product.alerts[i].alertIndex,
+              'isAlert': false
+            });
+          }
+        });
       }
+
       return true;
     } catch (e) {
       print(e.message);

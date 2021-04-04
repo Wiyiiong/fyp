@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
     await checkFirstSeen();
     FirebaseMessaging.instance.onTokenRefresh
         .listen(await CloudMessagingService.saveTokenToDB());
-    await CloudMessagingService.getNotification(context);
+    CloudMessagingService.getNotification(context);
 
     if (mounted) {
       setState(() {
@@ -171,6 +171,7 @@ class _HomePageState extends State<HomePage> {
                     setupMethod: _setupHomePage(),
                   ),
                 ),
+                Padding(padding: EdgeInsets.symmetric(vertical: 10)),
               ],
             ),
           ),

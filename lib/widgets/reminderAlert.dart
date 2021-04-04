@@ -50,6 +50,9 @@ class _ReminderAlertState extends State<ReminderAlert> {
     _selectedValue = [];
     _selectedType = [];
     _alertList = [];
+    if (widget.isEdit) {
+      setUpReminderDetails();
+    }
   }
 
   void setUpReminderDetails() async {
@@ -59,17 +62,13 @@ class _ReminderAlertState extends State<ReminderAlert> {
     List<dynamic> selectedType = new List<dynamic>();
     if (alertList != null) {
       for (int i = 0; i < alertList.length; i++) {
-        int durations =
-            widget.expiryDate.difference(alertList[i].alertDatetime).inDays;
+        DateTime alertDatetime = new DateTime(alertList[i].alertDatetime.year,
+            alertList[i].alertDatetime.month, alertList[i].alertDatetime.day);
+        int durations = widget.expiryDate.difference(alertDatetime).inDays;
         selectedValue.add(durations);
       }
-      selectedType.add(0);
-      if (widget.userDetails.isPhoneVerify) {
-        selectedType.add(1);
-      }
-      if (widget.userDetails.isEmailVerify) {
-        selectedType.add(2);
-      }
+
+      selectedType = alertList[0].alertIndex;
     }
     if (mounted) {
       setState(() {
@@ -183,13 +182,13 @@ class _ReminderAlertState extends State<ReminderAlert> {
     }
     if (days > 90) {
       optionList.add(FormBuilderFieldOption(
-        value: 60,
+        value: 90,
         child: Text('Three months before'),
       ));
     }
     if (days > 180) {
       optionList.add(FormBuilderFieldOption(
-        value: 60,
+        value: 180,
         child: Text('Six months before'),
       ));
     }
@@ -511,26 +510,21 @@ class _ReminderAlertState extends State<ReminderAlert> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isEdit) {
-      setUpReminderDetails();
-    } else {
-      for (int i = 0; i < _alertList.length; i++) {
-        if (_alertList[i]
-            .alertDatetime
-            .isAfter(widget.expiryDate.add(Duration(days: 1)))) {
-          if (mounted) {
-            setState(() {
-              _alertList.clear();
-              _selectedType.clear();
-              _selectedValue.clear();
-              _isDoneSelected = false;
-            });
-          }
-          break;
-        }
-      }
-    }
-
+    // if (widget.isEdit) {
+    //   setUpReminderDetails();
+    // } else {
+    //   for (int i = 0; i < _alertList.length; i++) {
+    //     if (_alertList[i]
+    //         .alertDatetime
+    //         .isAfter(widget.expiryDate.add(Duration(days: 1)))) {
+    //       _alertList.clear();
+    //       _selectedType.clear();
+    //       _selectedValue.clear();
+    //       _isDoneSelected = false;
+    //     }
+    //     break;
+    //   }
+    // }
     return Container(
         child: Padding(
       padding: EdgeInsets.all(4.0),

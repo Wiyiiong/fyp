@@ -245,7 +245,7 @@ class _SearchByCategoryState extends State<SearchByCategory> {
           borderRadius: BorderRadius.all(Radius.circular(10.0))),
       title: Text('Delete Category'),
       content: Container(
-        height: MediaQuery.of(context).size.height * 0.14,
+        height: MediaQuery.of(context).size.height * 0.18,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           RichText(
               text: TextSpan(
@@ -308,7 +308,7 @@ class _SearchByCategoryState extends State<SearchByCategory> {
 
               _setupCategory();
             },
-            child: Text('DELETE CATEGORY')),
+            child: Text('DELETE')),
       ],
     );
   }
@@ -362,42 +362,126 @@ class _SearchByCategoryState extends State<SearchByCategory> {
                       return category == 'None'
                           ? Card(
                               child: ListTile(
-                                  dense: false,
-                                  title: Text(category,
-                                      style: Theme.of(context)
-                                          .primaryTextTheme
-                                          .headline6),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ProductByCategory(
-                                          category: category,
-                                          currentUserId: _currentUserId,
-                                        ),
-                                      ),
-                                    );
-                                  }))
+                              dense: false,
+                              title: Text(category,
+                                  style: Theme.of(context)
+                                      .primaryTextTheme
+                                      .headline6),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductByCategory(
+                                      category: category,
+                                      currentUserId: _currentUserId,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ))
                           : Slidable(
                               child: Card(
                                   child: ListTile(
-                                      dense: false,
-                                      title: Text(category,
-                                          style: Theme.of(context)
-                                              .primaryTextTheme
-                                              .headline6),
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ProductByCategory(
-                                              category: category,
-                                              currentUserId: _currentUserId,
-                                            ),
-                                          ),
-                                        );
-                                      })),
+                                dense: false,
+                                title: Text(category,
+                                    style: Theme.of(context)
+                                        .primaryTextTheme
+                                        .headline6),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductByCategory(
+                                        category: category,
+                                        currentUserId: _currentUserId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                onLongPress: () {
+                                  showModalBottomSheet(
+                                      context: context,
+                                      backgroundColor:
+                                          Theme.of(context).backgroundColor,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(20),
+                                              topRight: Radius.circular(20))),
+                                      builder: (BuildContext context) {
+                                        return Container(
+                                            padding: EdgeInsets.all(10),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 3)),
+                                                // Text(
+                                                //   'Edit Product Photo',
+                                                //   style: Theme.of(context).primaryTextTheme.bodyText1,
+                                                // ),
+                                                // Padding(padding: EdgeInsets.symmetric(vertical: 3)),
+                                                // Divider(),
+                                                ListTile(
+                                                  title: Center(
+                                                      child: Text('Edit',
+                                                          style: TextStyle(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .primaryColor))),
+                                                  onTap: () async {
+                                                    Navigator.pop(context);
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            _buildEditCategoryDialog(
+                                                                context,
+                                                                categoryList,
+                                                                category));
+                                                  },
+                                                ),
+                                                ListTile(
+                                                  title: Center(
+                                                      child: Text('Delete',
+                                                          style: TextStyle(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .primaryColor))),
+                                                  onTap: () async {
+                                                    Navigator.pop(context);
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            _buildDeleteCategoryDialog(
+                                                                context,
+                                                                category));
+                                                  },
+                                                ),
+
+                                                Divider(
+                                                  height: 0.5,
+                                                ),
+                                                ListTile(
+                                                  title: Center(
+                                                      child: Text('CANCEL',
+                                                          style: TextStyle(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .disabledColor))),
+                                                  onTap: () {
+                                                    Navigator.of(context).pop();
+                                                    FocusScope.of(context)
+                                                        .unfocus();
+                                                  },
+                                                ),
+                                              ],
+                                            ));
+                                      });
+                                },
+                              )),
                               actionPane: SlidableDrawerActionPane(),
                               actionExtentRatio: 0.2,
                               secondaryActions: [
