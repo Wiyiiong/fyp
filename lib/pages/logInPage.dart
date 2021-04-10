@@ -1,3 +1,4 @@
+import 'package:expiry_reminder/pages/forgotPassword.dart';
 import 'package:expiry_reminder/pages/homePage.dart';
 import 'package:expiry_reminder/pages/signUp/signUpPage.dart';
 import 'package:expiry_reminder/services/userAuthServices.dart';
@@ -183,11 +184,20 @@ class _LogInPageState extends State<LogInPage> {
                             ]),
                             textInputAction: TextInputAction.done,
                           ),
-
-                          /// Padding
-                          Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10.0)),
-
+                          // Forgot Password Button
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ForgotPassword()),
+                              );
+                            },
+                            child: Text('Forgot Password?',
+                                style: TextStyle(
+                                    color: Theme.of(context).backgroundColor)),
+                          ),
+                          // Sign In Button
                           SizedBox(
                               width: double.infinity,
                               child: RaisedButton(
@@ -243,6 +253,7 @@ class _LogInPageState extends State<LogInPage> {
                                       }
                                     }
                                   })),
+                          // Sign Up Button
                           SizedBox(
                               width: double.infinity,
                               child: RaisedButton(
@@ -272,6 +283,7 @@ class _LogInPageState extends State<LogInPage> {
                 ),
               ),
             ),
+            // Third Party Sign Up Button
             Expanded(
               flex: 1,
               child: SizedBox.expand(

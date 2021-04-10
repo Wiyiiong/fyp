@@ -36,7 +36,7 @@ class ProductService {
     return products;
   }
 
-  /// Get a single product based on the id
+  /// Get a list of product based on category
   static Future<List<PersonalProduct>> getProductsByCategory(
       String userId, String category) async {
     QuerySnapshot productSnapshot = await userRef
@@ -302,6 +302,7 @@ class ProductService {
     }
   }
 
+  // Remove Out-ofstock product from the list
   static Future deletePersonalProduct(String userId, String productId) async {
     try {
       DocumentSnapshot productSnapshot = await userRef
@@ -329,6 +330,7 @@ class ProductService {
     }
   }
 
+  // Permanently delete a product
   static Future permanentDeleteProduct(String userId, String productId) async {
     try {
       DocumentSnapshot productSnapshot = await userRef
@@ -499,6 +501,7 @@ class ProductService {
     return downloadUrl;
   }
 
+  // To remove out of stock product from the list
   static Future prepareProductList(String userId) async {
     List<PersonalProduct> productList = await getProducts(userId);
 

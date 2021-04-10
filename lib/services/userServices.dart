@@ -6,8 +6,13 @@ import '../utils/constants.dart';
 
 class UserService {
   static Future<User> getUserDetails(String userId) async {
-    DocumentSnapshot userSnapshot = await userRef.doc(userId).get();
-    return User.fromDoc(userSnapshot);
+    try {
+      DocumentSnapshot userSnapshot = await userRef.doc(userId).get();
+      return User.fromDoc(userSnapshot);
+    } catch (e) {
+      print(e.message);
+    }
+    return null;
   }
 
   static Future changeAlertTime(String userId, TimeOfDay alertTime) async {

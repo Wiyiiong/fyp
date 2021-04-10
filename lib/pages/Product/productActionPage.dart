@@ -121,7 +121,7 @@ class _ProductActionPageState extends State<ProductActionPage>
       }
     });
 
-    CloudMessagingService.getNotification(context);
+    // CloudMessagingService.getNotification(context);
   }
 
   @override

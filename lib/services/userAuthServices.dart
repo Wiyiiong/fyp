@@ -152,6 +152,16 @@ class UserAuthService {
     return user.user.uid;
   }
 
+  static Future<dynamic> resetPasswords(String email) {
+    var status = auth.sendPasswordResetEmail(email: email).then((_) {
+      return '$successCode';
+    }).catchError((e) {
+      print(e.message);
+      return e.message;
+    });
+    return status;
+  }
+
 //   static Future<String> signInWithTwitter() async {
 //     // Create a TwitterLogin instance
 //     final TwitterLogin twitterLogin = new TwitterLogin(

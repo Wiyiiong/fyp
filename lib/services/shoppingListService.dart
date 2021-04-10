@@ -5,6 +5,7 @@ import 'package:expiry_reminder/services/productServices.dart';
 import 'package:expiry_reminder/utils/constants.dart';
 
 class ShoppingListService {
+  // get all shopping list item
   static Future<List<ShoppingList>> getShoppingList(String userId) async {
     QuerySnapshot shoppingListSnapshot =
         await userRef.doc(userId).collection('shoppingList').get();
@@ -29,6 +30,7 @@ class ShoppingListService {
     return shoppingList;
   }
 
+  // add new shopping list item
   static Future addShoppingList(
       String userId, ShoppingList shoppingList) async {
     try {
@@ -44,6 +46,7 @@ class ShoppingListService {
     }
   }
 
+  // edit shopping list item
   static Future editShoppingList(String userId, String shoppingListId,
       ShoppingList newShoppingList) async {
     try {
@@ -63,6 +66,7 @@ class ShoppingListService {
     }
   }
 
+  // delete shopping list item
   static Future deleteShoppingList(String userId, String shoppingListId) async {
     try {
       var shoppingListItemSnapshot = await userRef
@@ -86,6 +90,7 @@ class ShoppingListService {
     }
   }
 
+  // Set the shopping list item as done or undone
   static Future setDone(
       String userId, String shoppingListId, bool isDone) async {
     try {
@@ -124,6 +129,7 @@ class ShoppingListService {
   //   }
   // }
 
+  // add expired and out-of-stock product into shopping list
   static Future prepareShoppingList(String userId) async {
     List<PersonalProduct> productList =
         await ProductService.getAllProducts(userId);

@@ -43,11 +43,15 @@ class _VerifyPhoneState extends State<VerifyPhone> {
     var user =
         await UserService.getUserDetails(UserAuthService.getCurrentUser().uid);
     String phoneNumber = user.phoneNumber;
-    setState(() {
-      phoneNumberController.text =
-          UtilFunctions.unformatPhoneNumber(phoneNumber);
-    });
-    Navigator.of(context).pop();
+    if (phoneNumber != null) {
+      setState(() {
+        phoneNumberController.text =
+            UtilFunctions.unformatPhoneNumber(phoneNumber);
+      });
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 
   _showLoadingDialog(BuildContext context) {
