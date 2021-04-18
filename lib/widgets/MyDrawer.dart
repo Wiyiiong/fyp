@@ -130,20 +130,29 @@ class _MyDrawerState extends State<MyDrawer> {
                   showDialog(
                       context: context,
                       builder: (_) => ErrorDialog(
-                          errorTitle: "Barcode Not Found",
+                          errorTitle: "Barcode Invalid",
                           errorMessage:
-                              "No product is found with the barcode. Please try again."));
+                              "No barcode is detected. Please try again."));
                 } else {
                   var product = await ProductService.getProductByBarcode(
                       UserAuthService.getCurrentUser().uid, barcode);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ViewProductPage(
-                            currentProductId: product.id,
-                            currentUserId:
-                                UserAuthService.getCurrentUser().uid),
-                      ));
+                  if (product != null) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ViewProductPage(
+                              currentProductId: product.id,
+                              currentUserId:
+                                  UserAuthService.getCurrentUser().uid),
+                        ));
+                  } else {
+                    showDialog(
+                        context: context,
+                        builder: (_) => ErrorDialog(
+                            errorTitle: "Barcode Not Found",
+                            errorMessage:
+                                "No product is found with the barcode. Please try again."));
+                  }
                 }
               }),
           // Shopping List

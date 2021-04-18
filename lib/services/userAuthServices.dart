@@ -102,10 +102,15 @@ class UserAuthService {
   }
 
   static Future phoneVerified(String userId, String phoneNumber) async {
-    await userRef.doc(userId).update({
-      'isPhoneVerify': true,
-      'phoneNumber': UtilFunctions.formatPhoneNumber(phoneNumber)
-    }).catchError((e) => print(e.message));
+    if (auth.currentUser.phoneNumber.contains(phoneNumber)) {
+      await userRef.doc(userId).update({
+        'isPhoneVerify': true,
+        'phoneNumber': UtilFunctions.formatPhoneNumber(phoneNumber)
+      }).catchError((e) => print(e.message));
+      return true;
+    } else {
+      return false;
+    }
   }
 
   static Future verifyOTP({String smsCode, String verificationId}) async {

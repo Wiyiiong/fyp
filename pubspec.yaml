@@ -49,6 +49,7 @@ dependencies:
   tflite: ^1.1.1
   image: ^2.1.19
   flutter_local_notifications: ^4.0.1+1
+  connectivity: ^2.0.2
 
 
   # The following adds the Cupertino Icons font to your application.

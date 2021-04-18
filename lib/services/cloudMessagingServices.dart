@@ -38,7 +38,6 @@ class CloudMessagingService {
   }
 
   static getNotification(BuildContext context) {
-    print('hi');
     NotificationService.initNotification(context);
     flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
@@ -48,7 +47,6 @@ class CloudMessagingService {
     ;
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('On Message!!!');
       RemoteNotification notification = message.notification;
       AndroidNotification android = message.notification?.android;
 

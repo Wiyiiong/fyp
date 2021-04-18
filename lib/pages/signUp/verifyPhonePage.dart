@@ -255,27 +255,48 @@ class _VerifyPhoneState extends State<VerifyPhone> {
                                         smsCode: codeController.text,
                                         verificationId: this.verificationId)
                                     .then((value) async {
-                                  await UserAuthService.phoneVerified(
-                                      UserAuthService.getCurrentUser().uid,
-                                      phoneNumberController.text);
-                                  Navigator.of(context).pop();
-                                  var user = UserAuthService.getCurrentUser();
-                                  if (user.emailVerified) {
-                                    Navigator.push(
-                                      context,
-                                      CupertinoPageRoute(
-                                        builder: (context) => HomePage(
-                                          currentUserId: user.uid,
+                                  var verified =
+                                      await UserAuthService.phoneVerified(
+                                          UserAuthService.getCurrentUser().uid,
+                                          phoneNumberController.text);
+                                  if (verified) {
+                                    Navigator.of(context).pop();
+                                    var user = UserAuthService.getCurrentUser();
+                                    if (user.emailVerified) {
+                                      Navigator.push(
+                                        context,
+                                        CupertinoPageRoute(
+                                          builder: (context) => HomePage(
+                                            currentUserId: user.uid,
+                                          ),
                                         ),
-                                      ),
-                                    );
+                                      );
+                                    } else {
+                                      Navigator.push(
+                                        context,
+                                        CupertinoPageRoute(
+                                          builder: (context) => VerifyEmail(),
+                                        ),
+                                      );
+                                    }
                                   } else {
-                                    Navigator.push(
-                                      context,
-                                      CupertinoPageRoute(
-                                        builder: (context) => VerifyEmail(),
-                                      ),
-                                    );
+                                    Navigator.of(context).pop();
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                              title: Text(
+                                                  'Invalid Verfication Code'),
+                                              content: Text(
+                                                  'The verification code is invalid. Please enter a valid 6-digits validation code.'),
+                                              actions: [
+                                                FlatButton(
+                                                  child: Text('OKAY'),
+                                                  onPressed: () =>
+                                                      Navigator.of(context)
+                                                          .pop(),
+                                                )
+                                              ],
+                                            ));
                                   }
                                 }).catchError((e) => showDialog(
                                         context: context,
