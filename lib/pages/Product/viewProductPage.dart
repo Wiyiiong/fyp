@@ -435,34 +435,14 @@ class _ViewProductPageState extends State<ViewProductPage>
                                       barrierDismissible: false,
                                       barrierColor:
                                           Theme.of(context).splashColor,
-                                      builder: (BuildContext context) {
-                                        return Dialog(
-                                          backgroundColor: Colors.transparent,
-                                          elevation: 0.0,
-                                          child: Expanded(
-                                            child: SizedBox.expand(
-                                              child: Center(
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    CircularProgressIndicator(
-                                                        valueColor:
-                                                            new AlwaysStoppedAnimation<
-                                                                Color>(Theme.of(
-                                                                    context)
-                                                                .primaryColor)),
-                                                    Text('Loading...',
-                                                        style: Theme.of(context)
-                                                            .primaryTextTheme
-                                                            .bodyText1)
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      });
+                                      builder: (context) => AlertDialog(
+                                            elevation: 0.0,
+                                            content: Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                            backgroundColor: Colors.transparent,
+                                          ));
+
                                   await ProductService.permanentDeleteProduct(
                                       widget.currentUserId,
                                       widget.currentProductId);
